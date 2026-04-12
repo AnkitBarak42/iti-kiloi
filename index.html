@@ -42,9 +42,20 @@ window._firebaseReady = true;
 onValue(ref(db, "iti_kiloi/students"), (snap) => {
   if(snap.exists()){
     const d = snap.val();
-    window.students = d.students || [];
-    window.nextId = d.nextId || (window.students.length + 1);
-    if(window.currentUser) { try{ window.renderStudents(); window.renderDashboard(); }catch(e){} }
+    students = d.students || [];
+    nextId = d.nextId || (students.length + 1);
+    window.students = students;
+    window.nextId = nextId;
+    if(window.currentUser) {
+      try{
+        const activePage = document.querySelector(".page.active");
+        if(activePage && activePage.id === "page-students"){
+          window.populateFilters && window.populateFilters();
+          window.renderStudents && window.renderStudents();
+        }
+        window.renderDashboard && window.renderDashboard();
+      }catch(e){}
+    }
   }
 });
 
@@ -159,6 +170,7 @@ nav{flex:1;padding:6px 0}
 
 /* ── TABLE ── */
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tbl-scroll{overflow-x:auto;overflow-y:auto;max-height:65vh;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;min-width:500px}
 th{padding:9px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);background:var(--bg2);white-space:nowrap}
 td{padding:10px 12px;font-size:13px;border-bottom:1px solid rgba(30,37,53,.6);vertical-align:middle}
@@ -263,10 +275,10 @@ tr:hover td{background:rgba(255,255,255,.015)}
 </head>
 <body>
 
-<div id="offlineBanner">📵 Offline mode — App cached data se chal raha hai</div>
+<div id="offlineBanner">📵 Offline mode — App running on cached data</div>
 
 <div id="installBanner">
-  <p>📱 ITI Kiloi ko phone pe install karein!</p>
+  <p>📱 Install ITI Kiloi on your phone!</p>
   <button class="ib-btn" id="btnInstall">⬇️ Install App</button>
   <button class="ib-btn" id="btnDismiss">✕</button>
 </div>
@@ -279,9 +291,9 @@ tr:hover td{background:rgba(255,255,255,.015)}
       <h1>ITI <span>KILOI</span></h1>
       <p>Placement Management System</p>
     </div>
-    <div class="fg"><label>Username</label><input id="lUser" placeholder="Username likhein" autocomplete="username"></div>
-    <div class="fg"><label>Password</label><input id="lPass" type="password" placeholder="Password likhein" autocomplete="current-password"></div>
-    <div class="err-box" id="lErr">❌ Galat username ya password!</div>
+    <div class="fg"><label>Username</label><input id="lUser" placeholder="Enter username" autocomplete="username"></div>
+    <div class="fg"><label>Password</label><input id="lPass" type="password" placeholder="Enter password" autocomplete="current-password"></div>
+    <div class="err-box" id="lErr">❌ Invalid username or password!</div>
     <button class="btn-login" onclick="doLogin()">🔐 LOGIN</button>
   </div>
 </div>
@@ -327,6 +339,13 @@ tr:hover td{background:rgba(255,255,255,.015)}
           </div>
         </div>
         <div class="card">
+          <div class="card-head"><h3>📚 Trade-wise Overview</h3><button class="btn btn-secondary btn-sm" onclick="showPage('students')">View All →</button></div>
+          <div class="tbl-wrap">
+            <table><thead><tr><th>Trade</th><th>Total</th><th>Placed</th><th>Apprenticeship</th><th>Studying</th><th>Unemployed</th><th>Placement%</th></tr></thead>
+            <tbody id="tradeOverviewBody"></tbody></table>
+          </div>
+        </div>
+        <div class="card">
           <div class="card-head"><h3>🕐 Recent Students</h3><button class="btn btn-secondary btn-sm" onclick="showPage('students')">View All →</button></div>
           <div class="tbl-wrap">
             <table><thead><tr><th>Name</th><th>Trade</th><th>Session</th><th>Status</th><th>Company</th></tr></thead>
@@ -338,18 +357,18 @@ tr:hover td{background:rgba(255,255,255,.015)}
       <!-- STUDENTS -->
       <div class="page" id="page-students">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px">
-          <div class="ph" style="margin-bottom:0"><h1>🎓 Students</h1><p>Data permanently save hota hai ✅</p></div>
+          <div class="ph" style="margin-bottom:0"><h1>🎓 Students</h1><p>Data synced with Firebase ☁️</p></div>
           <button class="btn btn-primary" onclick="openAddModal()">➕ Add Student</button>
         </div>
         <div class="card">
           <div class="filter-row">
-            <input id="searchInp" placeholder="🔍 Name, Mobile, Roll No..." oninput="renderStudents()">
-            <select id="fTrade" onchange="renderStudents()"><option value="">All Trades</option></select>
-            <select id="fStatus" onchange="renderStudents()">
+            <input id="searchInp" placeholder="🔍 Name, Mobile, Roll No..." oninput="renderStudents(true)">
+            <select id="fTrade" onchange="renderStudents(true)"><option value="">All Trades</option></select>
+            <select id="fStatus" onchange="renderStudents(true)">
               <option value="">All Status</option>
               <option>Placed</option><option>Apprenticeship</option><option>Studying</option><option>Unemployed</option>
             </select>
-            <select id="fSession" onchange="renderStudents()"><option value="">All Sessions</option></select>
+            <select id="fSession" onchange="renderStudents(true)"><option value="">All Sessions</option></select>
             <span class="cnt-label" id="cntLabel"></span>
           </div>
           <div class="tbl-wrap">
@@ -385,9 +404,9 @@ tr:hover td{background:rgba(255,255,255,.015)}
 
       <!-- PRINT -->
       <div class="page" id="page-print">
-        <div class="ph"><h1>🖨️ Print / PDF</h1><p>Button dabao → Print preview khulega → Ctrl+P se PDF save karein</p></div>
+        <div class="ph"><h1>🖨️ Print / PDF</h1><p>Click button → Print preview opens → Save as PDF with Ctrl+P</p></div>
         <div style="background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:10px;padding:10px 14px;font-size:12px;color:var(--muted);margin-bottom:18px">
-          💡 <b style="color:var(--green)">Tip:</b> Browser mein popup allow karein. Print preview mein "Save as PDF" select karein.
+          💡 <b style="color:var(--green)">Tip:</b> Allow popups in browser. Select "Save as PDF" in print preview.
         </div>
         <div class="print-grid">
           <div class="print-card"><h4>📄 Full Student List</h4><p>Sabhi students — ITI official format with header & signature space.</p><button class="btn btn-primary" onclick="doPrint('all')">🖨️ Print / Save PDF</button></div>
@@ -408,7 +427,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
 
       <!-- IMPORT/EXPORT -->
       <div class="page" id="page-import">
-        <div class="ph"><h1>📥 Import / Export</h1><p>Data save, import aur export karein — Excel, PDF, CSV, JSON</p></div>
+        <div class="ph"><h1>📥 Import / Export</h1><p>Save, import and export your data — Excel, PDF, CSV, JSON</p></div>
 
         <!-- EXPORT SECTION -->
         <div class="card" style="margin-bottom:18px">
@@ -443,7 +462,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
             <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px;text-align:center">
               <div style="font-size:36px;margin-bottom:8px">💾</div>
               <div style="font-weight:700;font-size:14px;margin-bottom:5px">Data Backup (JSON)</div>
-              <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Poora data backup karein — students, users, trades sab</div>
+              <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Full data backup — students, users, trades all included</div>
               <button class="btn btn-secondary" style="width:100%" onclick="exportBackup()">💾 Backup Download</button>
             </div>
 
@@ -454,7 +473,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
           <div class="card" style="padding:22px;margin-bottom:0">
             <h4 style="font-size:14px;font-weight:700;margin-bottom:8px">⬆️ Import Students</h4>
-            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6">CSV, Excel ya PDF file se bulk students import karein.</p>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6">Import students in bulk from CSV, Excel or PDF file.</p>
             <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
               <span style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:6px;padding:3px 10px;font-size:11px;color:var(--green)">✅ CSV</span>
               <span style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:6px;padding:3px 10px;font-size:11px;color:var(--blue)">✅ Excel (.xlsx/.xls)</span>
@@ -465,7 +484,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
               ondragleave="this.style.borderColor='var(--border)'"
               ondrop="handleImportDrop(event)">
               <div style="font-size:32px;margin-bottom:8px">📁</div>
-              <div style="font-size:13px;color:var(--muted)">Click karein ya file drag karein</div>
+              <div style="font-size:13px;color:var(--muted)">Click or drag file here</div>
               <div style="font-size:11px;color:var(--muted);margin-top:4px">CSV, Excel (.xlsx/.xls), PDF supported</div>
               <input type="file" id="importFile" accept=".csv,.xlsx,.xls,.pdf" style="display:none" onchange="handleImportFile(event)">
             </div>
@@ -475,14 +494,14 @@ tr:hover td{background:rgba(255,255,255,.015)}
 
           <div class="card" style="padding:22px;margin-bottom:0">
             <h4 style="font-size:14px;font-weight:700;margin-bottom:8px">🔄 Restore Backup (JSON)</h4>
-            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6">Pehle ka backup file upload karke poora data restore karein.</p>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6">Upload a previous backup file to restore all data.</p>
             <div class="drop-zone" onclick="document.getElementById('jsonFile').click()"
               ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
               ondragleave="this.style.borderColor='var(--border)'"
               ondrop="handleJsonDrop(event)"
               style="border-color:rgba(59,130,246,.4)">
               <div style="font-size:32px;margin-bottom:8px">🗃️</div>
-              <div style="font-size:13px;color:var(--muted)">Click karein ya JSON drag karein</div>
+              <div style="font-size:13px;color:var(--muted)">Click or drag JSON file here</div>
               <input type="file" id="jsonFile" accept=".json" style="display:none" onchange="handleJsonRestore(event)">
             </div>
             <div id="restoreResult" style="display:none;margin-top:12px;border-radius:8px;padding:10px 13px;font-size:13px"></div>
@@ -504,12 +523,12 @@ tr:hover td{background:rgba(255,255,255,.015)}
 
       <!-- TRADES -->
       <div class="page" id="page-trades">
-        <div class="ph"><h1>🔧 Trade Management</h1><p>Naye trades add ya delete karein</p></div>
+        <div class="ph"><h1>🔧 Trade Management</h1><p>Add or delete trades</p></div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
           <div class="card" style="padding:20px;margin-bottom:0">
-            <h3 style="font-size:14px;font-weight:700;margin-bottom:14px">➕ Naya Trade Add Karein</h3>
+            <h3 style="font-size:14px;font-weight:700;margin-bottom:14px">➕ Add New Trade</h3>
             <div style="display:flex;gap:10px">
-              <input id="newTrade" placeholder="Trade naam likhein..." style="flex:1;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none">
+              <input id="newTrade" placeholder="Enter trade name..." style="flex:1;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none">
               <button class="btn btn-primary" onclick="addTrade()">Add</button>
             </div>
           </div>
@@ -524,7 +543,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
       <div class="page" id="page-activity">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px">
           <div class="ph" style="margin-bottom:0"><h1>🕵️ Activity Log</h1><p>Kaun kya kiya — poora record yahan hai</p></div>
-          <button class="btn btn-secondary btn-sm" onclick="if(confirm('Poora log clear karein?')){activityLog=[];lsSet(\'iti_kiloi_log\',[]);renderActivity();}">🗑️ Log Clear</button>
+          <button class="btn btn-secondary btn-sm" onclick="if(confirm('Clear entire activity log?')){activityLog=[];lsSet('iti_kiloi_log',[]);renderActivity();}">🗑️ Log Clear</button>
         </div>
 
         <!-- Stats row -->
@@ -574,7 +593,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
       <!-- USERS -->
       <div class="page" id="page-users">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px">
-          <div class="ph" style="margin-bottom:0"><h1>👤 Users</h1><p>Apni marzi ka username & password set karein</p></div>
+          <div class="ph" style="margin-bottom:0"><h1>👤 Users</h1><p>Set custom username & password</p></div>
           <button class="btn btn-primary" onclick="openAddUserModal()">➕ Naya User</button>
         </div>
         <div class="card">
@@ -596,9 +615,9 @@ tr:hover td{background:rgba(255,255,255,.015)}
 <!-- STUDENT MODAL -->
 <div class="modal-overlay" id="stuModal">
   <div class="modal">
-    <div class="modal-title" id="modalTitle">➕ Student Add Karein</div>
+    <div class="modal-title" id="modalTitle">➕ Add Student</div>
     <div class="form-grid">
-      <div class="fg2"><label>Full Name *</label><input id="fName" placeholder="Student ka naam"></div>
+      <div class="fg2"><label>Full Name *</label><input id="fName" placeholder="Student full name"></div>
       <div class="fg2"><label>Roll No *</label><input id="fRoll" placeholder="KLI/2024/001"></div>
       <div class="fg2"><label>Mobile No</label><input id="fMobile" placeholder="10 digit" maxlength="10"></div>
       <div class="fg2"><label>Aadhaar (masked)</label><input id="fAadhaar" placeholder="XXXX-XXXX-1234" maxlength="14"></div>
@@ -614,12 +633,12 @@ tr:hover td{background:rgba(255,255,255,.015)}
       <div class="fg2"><label>Status</label>
         <select id="fStatus2"><option>Placed</option><option>Apprenticeship</option><option>Studying</option><option>Unemployed</option></select>
       </div>
-      <div class="fg2"><label>Company / Organization</label><input id="fCompany" placeholder="Company naam"></div>
+      <div class="fg2"><label>Company / Organization</label><input id="fCompany" placeholder="Company name"></div>
     </div>
-    <div class="fg2"><label>Remarks</label><input id="fRemarks" placeholder="Koi notes..."></div>
+    <div class="fg2"><label>Remarks</label><input id="fRemarks" placeholder="Any notes..."></div>
     <div class="modal-foot">
       <button class="btn btn-secondary" onclick="closeModal('stuModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveStudent()">💾 Save Karein</button>
+      <button class="btn btn-primary" onclick="saveStudent()">💾 Save</button>
     </div>
   </div>
 </div>
@@ -631,7 +650,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
     <div class="detail-grid" id="viewGrid"></div>
     <div class="modal-foot">
       <button class="btn btn-secondary btn-sm" id="viewEditBtn">✏️ Edit</button>
-      <button class="btn btn-secondary" onclick="closeModal('viewModal')">Band Karein</button>
+      <button class="btn btn-secondary" onclick="closeModal('viewModal')">Close</button>
     </div>
   </div>
 </div>
@@ -641,13 +660,13 @@ tr:hover td{background:rgba(255,255,255,.015)}
   <div class="modal">
     <div class="modal-title" id="userModalTitle">➕ Naya User Banayein</div>
     <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.15);border-radius:8px;padding:10px 13px;font-size:12px;color:var(--muted);margin-bottom:16px">
-      🔐 Apni marzi ka username aur password set karein — permanently save hoga
+      🔐 Set your own username and password — will be saved permanently
     </div>
     <div class="fg2"><label>Username *</label><input id="uUsername" placeholder="e.g. principal, ravi123"></div>
     <div class="fg2"><label>Display Name *</label><input id="uName" placeholder="e.g. Ravi Sharma"></div>
     <div class="fg2"><label>Password *</label>
       <div style="position:relative">
-        <input id="uPass" type="password" placeholder="Password likhein" style="padding-right:44px">
+        <input id="uPass" type="password" placeholder="Enter password" style="padding-right:44px">
         <button onclick="togglePw()" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px" id="pwToggle">👁️</button>
       </div>
     </div>
@@ -659,7 +678,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
     </div>
     <div class="modal-foot">
       <button class="btn btn-secondary" onclick="closeModal('userModal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveUser()">💾 Save Karein</button>
+      <button class="btn btn-primary" onclick="saveUser()">💾 Save</button>
     </div>
   </div>
 </div>
@@ -755,7 +774,8 @@ window.addEventListener("load",()=>{
   window.trades = trades;
   window.activityLog = activityLog;
   window.currentUser = currentUser;
-  window.renderStudents = renderStudents;
+  window.renderStudents = ()=>{populateFilters();renderStudents(false);};
+  window.populateFilters = populateFilters;
   window.renderUsers = renderUsers;
   window.renderTrades = renderTrades;
   window.renderActivity = renderActivity;
@@ -863,7 +883,26 @@ function showPage(name){
   if(nv) nv.classList.add("active");
   closeSidebar();
   if(name==="dashboard") renderDashboard();
-  if(name==="students"){populateFilters();renderStudents();}
+  if(name==="students"){
+    populateFilters();
+    // Apply pending filter from dashboard click
+    if(window._pendingStatusFilter!==null && window._pendingStatusFilter!==undefined){
+      const el=document.getElementById("fStatus");
+      if(el) el.value=window._pendingStatusFilter;
+      window._pendingStatusFilter=null;
+    }
+    if(window._pendingTradeFilter!==null && window._pendingTradeFilter!==undefined){
+      const el=document.getElementById("fTrade");
+      if(el) el.value=window._pendingTradeFilter;
+      window._pendingTradeFilter=null;
+    }
+    // Wait for Firebase data if not loaded yet
+    if(students.length===0 && window._firebaseReady){
+      setTimeout(()=>{populateFilters();renderStudents(true);},800);
+    } else {
+      renderStudents(true);
+    }
+  }
   if(name==="reports") renderReports();
   if(name==="activity") renderActivity();
   if(name==="print") populatePrintSelects();
@@ -890,7 +929,15 @@ function getStats(){
 function renderDashboard(){
   const s=getStats();
   const cards=[["Total",s.total,"var(--blue)","Students"],["Placed",s.placed,"var(--green)","Industry"],["Apprenticeship",s.apprenticeship,"var(--blue)","Training"],["Studying",s.studying,"var(--accent)","Further edu."],["Unemployed",s.unemployed,"var(--red)","Seeking job"],["Placement %",s.pct+"%","var(--purple)","Placed+Appren."]];
-  document.getElementById("statsGrid").innerHTML=cards.map(([l,v,c,sub])=>`<div class="stat-card" style="border-left-color:${c}"><div class="sl">${l}</div><div class="sv" style="color:${c}">${v}</div><div class="ss">${sub}</div></div>`).join("");
+  const statusMap={"Total":null,"Placed":"Placed","Apprenticeship":"Apprenticeship","Studying":"Studying","Unemployed":"Unemployed","Placement %":null};
+  document.getElementById("statsGrid").innerHTML=cards.map(([l,v,c,sub])=>{
+    const st=statusMap[l];
+    const clickable=st!==undefined&&l!=="Placement %";
+    const cursor=clickable?"cursor:pointer;":"";
+    const onclick=clickable?`onclick="filterByStatus('${st}')"` :"";
+    const hover=clickable?`onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'"` :"";
+    return`<div class="stat-card" style="border-left-color:${c};${cursor}transition:transform .15s" ${onclick} ${hover} title="${clickable?'Click to filter students':''}"><div class="sl">${l}</div><div class="sv" style="color:${c}">${v}</div><div class="ss">${sub}${clickable?' 🔍':''}</div></div>`;
+  }).join("");
 
   document.getElementById("progBars").innerHTML=[["Placed",s.placed,"var(--green)"],["Apprenticeship",s.apprenticeship,"var(--blue)"],["Studying",s.studying,"var(--accent)"],["Unemployed",s.unemployed,"var(--red)"]].map(([l,v,c])=>{
     const p=s.total?Math.round(v/s.total*100):0;
@@ -907,7 +954,30 @@ function renderDashboard(){
   document.getElementById("recentBody").innerHTML=[...students].reverse().slice(0,5).map(s=>`
     <tr><td><b>${s.name}</b></td><td>${s.trade}</td><td>${s.session}</td>
     <td><span class="badge b-${s.status.toLowerCase()}">${s.status}</span></td>
-    <td style="color:var(--muted)">${s.company||"—"}</td></tr>`).join("")||`<tr><td class="empty-td" colspan="5">Koi student nahi</td></tr>`;
+    <td style="color:var(--muted)">${s.company||"—"}</td></tr>`).join("")||`<tr><td class="empty-td" colspan="5">No students found</td></tr>`;
+
+  // Trade-wise overview
+  const tradeList=[...new Set(students.map(s=>s.trade))].sort();
+  const tradeOverviewEl=document.getElementById("tradeOverviewBody");
+  if(tradeOverviewEl){
+    tradeOverviewEl.innerHTML=tradeList.length?tradeList.map(tr=>{
+      const t=students.filter(s=>s.trade===tr);
+      const pl=t.filter(s=>s.status==="Placed").length;
+      const ap=t.filter(s=>s.status==="Apprenticeship").length;
+      const st=t.filter(s=>s.status==="Studying").length;
+      const un=t.filter(s=>s.status==="Unemployed").length;
+      const pct=t.length?Math.round((pl+ap)/t.length*100):0;
+      return`<tr style="cursor:pointer" onclick="filterByTrade('${tr}')" title="Click to view ${tr} students">
+        <td><b>${tr}</b></td>
+        <td><span style="color:var(--blue);font-weight:700">${t.length}</span></td>
+        <td><span style="color:var(--green)">${pl}</span></td>
+        <td><span style="color:var(--blue)">${ap}</span></td>
+        <td><span style="color:var(--accent)">${st}</span></td>
+        <td><span style="color:var(--red)">${un}</span></td>
+        <td><span style="color:${pct>=50?'var(--green)':'var(--red)'};font-weight:700">${pct}%</span></td>
+      </tr>`;
+    }).join(""):`<tr><td class="empty-td" colspan="7">No data</td></tr>`;
+  }
 }
 
 // ═══════════════════════════════════════════════
@@ -922,18 +992,25 @@ function populateFilters(){
   document.getElementById("fTrade2").innerHTML=trades.map(t=>`<option>${t}</option>`).join("");
 }
 
-function renderStudents(){
+let stuPage=1;const STU_PER_PAGE=25;
+
+function renderStudents(resetPage){
+  if(resetPage) stuPage=1;
   const q=document.getElementById("searchInp").value.toLowerCase();
   const tr=document.getElementById("fTrade").value,st=document.getElementById("fStatus").value,se=document.getElementById("fSession").value;
   const fil=students.filter(s=>
     (!q||s.name.toLowerCase().includes(q)||s.mobile.includes(q)||s.roll.toLowerCase().includes(q))
     &&(!tr||s.trade===tr)&&(!st||s.status===st)&&(!se||s.session===se)
   );
-  document.getElementById("cntLabel").textContent=fil.length+" students";
+  const total=fil.length;
+  const totalPages=Math.max(1,Math.ceil(total/STU_PER_PAGE));
+  if(stuPage>totalPages) stuPage=totalPages;
+  const paged=fil.slice((stuPage-1)*STU_PER_PAGE, stuPage*STU_PER_PAGE);
+  document.getElementById("cntLabel").textContent=total+" students";
   const isAdmin=currentUser?.role==="admin";
-  document.getElementById("stuBody").innerHTML=fil.length?fil.map((s,i)=>`
+  document.getElementById("stuBody").innerHTML=paged.length?paged.map((s,i)=>`
     <tr>
-      <td style="color:var(--muted)">${i+1}</td>
+      <td style="color:var(--muted)">${(stuPage-1)*STU_PER_PAGE+i+1}</td>
       <td><b>${s.name}</b></td>
       <td style="font-size:12px;color:var(--muted)">${s.roll}</td>
       <td>${s.mobile}</td><td>${s.trade}</td><td>${s.session}</td>
@@ -944,12 +1021,42 @@ function renderStudents(){
         <button class="btn-icon bi-edit" onclick="editStudent(${s.id})">✏️</button>
         ${isAdmin?`<button class="btn-icon bi-del" onclick="delStudent(${s.id})">🗑️</button>`:""}
       </div></td>
-    </tr>`).join(""):`<tr><td class="empty-td" colspan="9">Koi student nahi mila</td></tr>`;
+    </tr>`).join(""):`<tr><td class="empty-td" colspan="9">No students found</td></tr>`;
+
+  // Pagination
+  let pg='';
+  if(totalPages>1){
+    pg+=`<div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-top:1px solid var(--border);flex-wrap:wrap;gap:8px">`;
+    pg+=`<span style="font-size:12px;color:var(--muted)">Showing ${(stuPage-1)*STU_PER_PAGE+1}–${Math.min(stuPage*STU_PER_PAGE,total)} of ${total}</span>`;
+    pg+=`<div style="display:flex;gap:6px;align-items:center">`;
+    pg+=`<button class="btn btn-secondary btn-sm" onclick="stuPage=1;renderStudents()" ${stuPage===1?"disabled":""}>«</button>`;
+    pg+=`<button class="btn btn-secondary btn-sm" onclick="stuPage--;renderStudents()" ${stuPage===1?"disabled":""}>‹ Prev</button>`;
+    pg+=`<span style="font-size:12px;color:var(--muted);padding:0 6px">Page ${stuPage} / ${totalPages}</span>`;
+    pg+=`<button class="btn btn-secondary btn-sm" onclick="stuPage++;renderStudents()" ${stuPage===totalPages?"disabled":""}>Next ›</button>`;
+    pg+=`<button class="btn btn-secondary btn-sm" onclick="stuPage=${totalPages};renderStudents()" ${stuPage===totalPages?"disabled":""}>»</button>`;
+    pg+=`</div></div>`;
+  }
+  let pgEl=document.getElementById("stuPagination");
+  if(!pgEl){pgEl=document.createElement("div");pgEl.id="stuPagination";document.getElementById("stuBody").closest("table").after(pgEl);}
+  pgEl.innerHTML=pg;
+}
+
+function filterByTrade(trade){
+  // Store filter to apply after page loads
+  window._pendingTradeFilter = trade||"";
+  window._pendingStatusFilter = null;
+  showPage("students");
+}
+
+function filterByStatus(status){
+  window._pendingStatusFilter = status||"";
+  window._pendingTradeFilter = null;
+  showPage("students");
 }
 
 function openAddModal(){
   editingId=null;
-  document.getElementById("modalTitle").textContent="➕ Student Add Karein";
+  document.getElementById("modalTitle").textContent="➕ Add Student";
   ["fName","fRoll","fMobile","fAadhaar","fAddress","fCompany","fRemarks"].forEach(id=>document.getElementById(id).value="");
   document.getElementById("fTrade2").innerHTML=trades.map(t=>`<option>${t}</option>`).join("");
   document.getElementById("fSession2").value="2024-25";
@@ -960,7 +1067,7 @@ function openAddModal(){
 function editStudent(id){
   const s=students.find(x=>x.id===id);if(!s)return;
   editingId=id;
-  document.getElementById("modalTitle").textContent="✏️ Student Edit Karein";
+  document.getElementById("modalTitle").textContent="✏️ Edit Student";
   document.getElementById("fName").value=s.name;document.getElementById("fRoll").value=s.roll;
   document.getElementById("fMobile").value=s.mobile;document.getElementById("fAadhaar").value=s.aadhaar;
   document.getElementById("fAddress").value=s.address;
@@ -973,7 +1080,7 @@ function editStudent(id){
 function viewStudent(id){
   const s=students.find(x=>x.id===id);if(!s)return;
   document.getElementById("viewGrid").innerHTML=[
-    ["Naam",s.name],["Roll No",s.roll],["Mobile",s.mobile],["Aadhaar",s.aadhaar||"N/A"],
+    ["Name",s.name],["Roll No",s.roll],["Mobile",s.mobile],["Aadhaar",s.aadhaar||"N/A"],
     ["Address",s.address||"—"],["Trade",s.trade],["Session",s.session],
     ["Company",s.company||"—"],["Remarks",s.remarks||"—"],
   ].map(([l,v])=>`<div class="detail-item"><div class="dl">${l}</div><div class="dv">${v}</div></div>`).join("")
@@ -984,7 +1091,7 @@ function viewStudent(id){
 
 function saveStudent(){
   const name=document.getElementById("fName").value.trim(),roll=document.getElementById("fRoll").value.trim();
-  if(!name||!roll){showToast("Name aur Roll No zaroori hai!","err");return;}
+  if(!name||!roll){showToast("Name and Roll No are required!","err");return;}
   const data={name,roll,
     mobile:document.getElementById("fMobile").value.trim(),
     aadhaar:document.getElementById("fAadhaar").value.trim(),
@@ -998,11 +1105,11 @@ function saveStudent(){
   if(editingId){
     students=students.map(s=>s.id===editingId?{id:editingId,...data}:s);
     logActivity("EDIT_STUDENT", `"${data.name}" (${data.roll}) ko edit kiya — Status: ${data.status}`);
-    showToast("Update ho gaya ✅");
+    showToast("Updated successfully ✅");
   } else {
     students.push({id:nextId++,...data});
     logActivity("ADD_STUDENT", `"${data.name}" (${data.roll}) add kiya — Trade: ${data.trade}, Status: ${data.status}`);
-    showToast("Student save ho gaya ✅");
+    showToast("Student saved successfully ✅");
   }
   persistAll();closeModal("stuModal");renderStudents();
 }
@@ -1011,7 +1118,7 @@ function delStudent(id){
   if(!confirm("Delete karna chahte hain?"))return;
   const s=students.find(x=>x.id===id);
   logActivity("DELETE_STUDENT", `"${s?s.name:'Unknown'}" (${s?s.roll:id}) delete kiya`);
-  students=students.filter(s=>s.id!==id);persistAll();renderStudents();showToast("Delete ho gaya.");
+  students=students.filter(s=>s.id!==id);persistAll();renderStudents();showToast("Deleted successfully.");
 }
 
 function closeModal(id){document.getElementById(id).classList.remove("open");}
@@ -1053,7 +1160,7 @@ function populatePrintSelects(){
 
 function printTable(data,title){
   const w=window.open("","_blank","width=900,height=700");
-  if(!w){alert("Popup allow karein: Address bar ke paas lock icon → Site Settings → Popups allow");return;}
+  if(!w){alert("Allow popups: Click lock icon in address bar → Site Settings → Allow Popups");return;}
   const rows=data.map((s,i)=>`<tr><td>${i+1}</td><td><b>${s.name}</b></td><td>${s.roll}</td><td>${s.trade}</td><td>${s.session}</td><td style="color:${s.status==="Placed"?"#16a34a":s.status==="Unemployed"?"#dc2626":"#d97706"};font-weight:700">${s.status}</td><td>${s.company||"—"}</td><td>${s.mobile}</td></tr>`).join("");
   w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title><style>${printCSS}</style></head><body>
   <div class="hdr"><h1>ITI KILOI — PLACEMENT MANAGEMENT</h1><h2>${title}</h2><p>Date: ${new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"long",year:"numeric"})}</p></div>
@@ -1077,7 +1184,7 @@ function doPrint(type){
   if(type==="summary"){
     const s=getStats();
     const w=window.open("","_blank","width=900,height=700");
-    if(!w){alert("Popup allow karein");return;}
+    if(!w){alert("Please allow popups");return;}
     const tradeRows=[...new Set(students.map(x=>x.trade))].sort().map(t=>{
       const ts=students.filter(x=>x.trade===t),pl=ts.filter(x=>x.status==="Placed").length,ap=ts.filter(x=>x.status==="Apprenticeship").length,st2=ts.filter(x=>x.status==="Studying").length,un=ts.filter(x=>x.status==="Unemployed").length,p=ts.length?Math.round((pl+ap)/ts.length*100):0;
       return`<tr><td><b>${t}</b></td><td>${ts.length}</td><td style="color:#16a34a">${pl}</td><td style="color:#2563eb">${ap}</td><td style="color:#d97706">${st2}</td><td style="color:#dc2626">${un}</td><td style="font-weight:700;color:${p>=70?"#16a34a":p>=40?"#d97706":"#dc2626"}">${p}%</td></tr>`;
@@ -1294,7 +1401,7 @@ function processJsonRestore(file){
     try{
       const bk=JSON.parse(ev.target.result);
       if(!bk.data||!bk.data.students) throw new Error("Invalid backup file");
-      if(!confirm(`Restore karein? Isse sab current data replace ho jayega.\n\nBackup mein: ${bk.data.students.length} students, ${Object.keys(bk.data.users||{}).length} users`)) return;
+      if(!confirm(`Restore? This will replace all current data.\n\nBackup contains: ${bk.data.students.length} students, ${Object.keys(bk.data.users||{}).length} users`)) return;
       students=bk.data.students; nextId=bk.data.nextId||students.length+1;
       if(bk.data.trades) trades=bk.data.trades;
       if(bk.data.users) users=bk.data.users;
@@ -1388,7 +1495,7 @@ function processExcel(file){
       logActivity("IMPORT_CSV",`Excel import kiya — ${added} students add hue, ${skipped} rows skip`);
       showImportResult(added,skipped,"Excel");
     }catch(err){
-      showToast("❌ Excel file read nahi ho saki!","err");
+      showToast("❌ Could not read Excel file!","err");
       console.error(err);
     }
   };
@@ -1402,12 +1509,12 @@ function processPDF(file){
   res.style.background="rgba(245,158,11,.1)";
   res.style.borderColor="rgba(245,158,11,.3)";
   res.innerHTML=`⚠️ <b>PDF se direct import limited hai.</b><br><br>
-    PDF mein structured data nahi hota, isliye manually add karna hoga.<br><br>
-    <b>Suggestion:</b> PDF ko Excel/CSV mein convert karein:<br>
+    PDF does not contain structured data, please add manually.<br><br>
+    <b>Suggestion:</b> Convert PDF to Excel/CSV:<br>
     1. <a href="https://smallpdf.com/pdf-to-excel" target="_blank" style="color:var(--accent)">smallpdf.com/pdf-to-excel</a> use karein<br>
-    2. Phir Excel file import karein ✅<br><br>
-    Ya <button class="btn btn-secondary btn-sm" onclick="downloadTemplate()">⬇️ Template Download</button> karke manually fill karein.`;
-  showToast("⚠️ PDF ko Excel mein convert karke import karein","err");
+    2. Then import the Excel file ✅<br><br>
+    Or <button class="btn btn-secondary btn-sm" onclick="downloadTemplate()">⬇️ Download Template</button> and fill manually.`;
+  showToast("⚠️ Please convert PDF to Excel before importing","err");
 }
 
 function showImportResult(added,skipped,type){
@@ -1548,7 +1655,7 @@ function delTrade(t){
   if(!confirm(`"${t}" delete karein?`))return;
   trades=trades.filter(x=>x!==t);
   logActivity("DELETE_TRADE", `"${t}" trade delete kiya`);
-  persistAll();renderTrades();showToast("Delete ho gaya.");
+  persistAll();renderTrades();showToast("Deleted successfully.");
 }
 
 // ═══════════════════════════════════════════════
@@ -1605,7 +1712,7 @@ function delUser(un){
   if(users[un].role==="admin"&&Object.values(users).filter(u=>u.role==="admin").length<=1){showToast("1 admin zaroori hai!","err");return;}
   if(!confirm(`"${un}" delete karein?`))return;
   logActivity("DELETE_USER", `User "${un}" (${users[un].name}) delete kiya`);
-  delete users[un];persistAll();renderUsers();showToast("Delete ho gaya.");
+  delete users[un];persistAll();renderUsers();showToast("Deleted successfully.");
 }
 
 function togglePw(){
