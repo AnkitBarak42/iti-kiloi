@@ -15,6 +15,62 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCV_dEkyIdUU8nDUPqC4VjpLQmaYJCbPGw",
+  authDomain: "iti-kiloi.firebaseapp.com",
+  databaseURL: "https://iti-kiloi-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "iti-kiloi",
+  storageBucket: "iti-kiloi.firebasestorage.app",
+  messagingSenderId: "18851968697",
+  appId: "1:18851968697:web:d3169d64203c88dd45cd68"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+window._firebaseDB = db;
+window._firebaseRef = ref;
+window._firebaseSet = set;
+window._firebaseOnValue = onValue;
+window._firebaseGet = get;
+window._firebaseReady = true;
+
+// ── Real-time listeners — jaise hi koi update kare sabko dikhega ──
+onValue(ref(db, "iti_kiloi/students"), (snap) => {
+  if(snap.exists()){
+    const d = snap.val();
+    window.students = d.students || [];
+    window.nextId = d.nextId || (window.students.length + 1);
+    if(window.currentUser) { try{ window.renderStudents(); window.renderDashboard(); }catch(e){} }
+  }
+});
+
+onValue(ref(db, "iti_kiloi/users"), (snap) => {
+  if(snap.exists()){
+    window.users = snap.val();
+    if(window.currentUser) { try{ window.renderUsers(); }catch(e){} }
+  }
+});
+
+onValue(ref(db, "iti_kiloi/trades"), (snap) => {
+  if(snap.exists()){
+    window.trades = snap.val();
+    if(window.currentUser) { try{ window.renderTrades(); }catch(e){} }
+  }
+});
+
+onValue(ref(db, "iti_kiloi/log"), (snap) => {
+  if(snap.exists()){
+    window.activityLog = snap.val() || [];
+    if(window.currentUser) { try{ window.renderActivity(); }catch(e){} }
+  }
+});
+
+console.log("✅ Firebase Realtime Database connected!");
+</script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 :root{
@@ -644,36 +700,99 @@ function logActivity(action, details){
 }
 
 // ═══════════════════════════════════════════════
-// STORAGE (localStorage — works in all browsers)
+// STORAGE — Firebase Realtime Database (Real-time sync sabke liye)
 // ═══════════════════════════════════════════════
 function lsGet(k){ try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch{return null;} }
-function lsSet(k,v){ try{localStorage.setItem(k,JSON.stringify(v));setSaveInd("saved");}catch{setSaveInd("");} }
+function lsSet(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch{} }
 
 function setSaveInd(s){
   const el=document.getElementById("saveInd");
   el.className="save-ind "+(s||"");
-  el.textContent=s==="saving"?"💾 Saving...":s==="saved"?"✅ Saved!":"";
+  el.textContent=s==="saving"?"☁️ Syncing...":s==="saved"?"✅ Synced!":"";
   if(s==="saved") setTimeout(()=>{el.className="save-ind";el.textContent="";},2000);
 }
 
 function persistAll(){
   setSaveInd("saving");
-  lsSet("iti_kiloi_students",{students,nextId});
-  lsSet("iti_kiloi_users",users);
-  lsSet("iti_kiloi_trades",trades);
-  lsSet("iti_kiloi_log",activityLog);
+  if(window._firebaseReady){
+    const db=window._firebaseDB, r=window._firebaseRef, s=window._firebaseSet;
+    Promise.all([
+      s(r(db,"iti_kiloi/students"),{students,nextId}),
+      s(r(db,"iti_kiloi/users"),users),
+      s(r(db,"iti_kiloi/trades"),trades),
+      s(r(db,"iti_kiloi/log"),activityLog)
+    ]).then(()=>setSaveInd("saved")).catch(e=>{
+      console.error("Firebase error:",e);
+      lsSet("iti_kiloi_students",{students,nextId});
+      lsSet("iti_kiloi_users",users);
+      lsSet("iti_kiloi_trades",trades);
+      lsSet("iti_kiloi_log",activityLog);
+      setSaveInd("saved");
+    });
+  } else {
+    lsSet("iti_kiloi_students",{students,nextId});
+    lsSet("iti_kiloi_users",users);
+    lsSet("iti_kiloi_trades",trades);
+    lsSet("iti_kiloi_log",activityLog);
+    setSaveInd("saved");
+  }
 }
 
 // ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
 window.addEventListener("load",()=>{
-  const sd=lsGet("iti_kiloi_students"),su=lsGet("iti_kiloi_users"),st=lsGet("iti_kiloi_trades"),sl=lsGet("iti_kiloi_log");
-  if(sd&&sd.students&&sd.students.length){students=sd.students;nextId=sd.nextId||sd.students.length+1;}
-  else{students=JSON.parse(JSON.stringify(SAMPLE));nextId=6;lsSet("iti_kiloi_students",{students,nextId});}
-  if(su) users=su;
-  if(st) trades=st;
-  if(sl) activityLog=sl;
+  // Expose globals for Firebase listeners
+  window.students = students;
+  window.nextId = nextId;
+  window.users = users;
+  window.trades = trades;
+  window.activityLog = activityLog;
+  window.currentUser = currentUser;
+  window.renderStudents = renderStudents;
+  window.renderUsers = renderUsers;
+  window.renderTrades = renderTrades;
+  window.renderActivity = renderActivity;
+  window.renderDashboard = renderDashboard;
+
+  // Firebase se load karo — agar nahi mila to localStorage fallback
+  function loadFromFirebase(){
+    if(!window._firebaseReady){ loadFromLocalStorage(); return; }
+    const db=window._firebaseDB, r=window._firebaseRef, g=window._firebaseGet;
+    g(r(db,"iti_kiloi/students")).then(snap=>{
+      if(snap.exists()&&snap.val().students&&snap.val().students.length){
+        const d=snap.val(); students=d.students; nextId=d.nextId||students.length+1;
+        window.students=students; window.nextId=nextId;
+      } else {
+        students=JSON.parse(JSON.stringify(SAMPLE)); nextId=6;
+        window._firebaseSet(r(db,"iti_kiloi/students"),{students,nextId});
+      }
+    }).catch(()=>loadFromLocalStorage());
+    g(r(db,"iti_kiloi/users")).then(snap=>{if(snap.exists()){users=snap.val();window.users=users;}});
+    g(r(db,"iti_kiloi/trades")).then(snap=>{if(snap.exists()){trades=snap.val();window.trades=trades;}});
+    g(r(db,"iti_kiloi/log")).then(snap=>{if(snap.exists()){activityLog=snap.val();window.activityLog=activityLog;}});
+    console.log("✅ Data loaded from Firebase!");
+  }
+
+  function loadFromLocalStorage(){
+    const sd=lsGet("iti_kiloi_students"),su=lsGet("iti_kiloi_users"),st=lsGet("iti_kiloi_trades"),sl=lsGet("iti_kiloi_log");
+    if(sd&&sd.students&&sd.students.length){students=sd.students;nextId=sd.nextId||sd.students.length+1;}
+    else{students=JSON.parse(JSON.stringify(SAMPLE));nextId=6;}
+    if(su) users=su;
+    if(st) trades=st;
+    if(sl) activityLog=sl;
+  }
+
+  // Firebase ready hone ka wait karo (max 2 seconds)
+  let attempts=0;
+  const waitForFirebase=setInterval(()=>{
+    attempts++;
+    if(window._firebaseReady||attempts>20){
+      clearInterval(waitForFirebase);
+      loadFromFirebase();
+    }
+  },100);
+
   if("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{});
   window.addEventListener("offline",()=>document.getElementById("offlineBanner").classList.add("show"));
   window.addEventListener("online", ()=>document.getElementById("offlineBanner").classList.remove("show"));
