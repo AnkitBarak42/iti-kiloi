@@ -15,10 +15,9 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
 const firebaseConfig = {
   apiKey: "AIzaSyCV_dEkyIdUU8nDUPqC4VjpLQmaYJCbPGw",
   authDomain: "iti-kiloi.firebaseapp.com",
@@ -28,59 +27,10 @@ const firebaseConfig = {
   messagingSenderId: "18851968697",
   appId: "1:18851968697:web:d3169d64203c88dd45cd68"
 };
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-window._firebaseDB = db;
-window._firebaseRef = ref;
-window._firebaseSet = set;
-window._firebaseOnValue = onValue;
-window._firebaseGet = get;
+firebase.initializeApp(firebaseConfig);
+window._db = firebase.database();
 window._firebaseReady = true;
-
-// ── Real-time listeners — jaise hi koi update kare sabko dikhega ──
-onValue(ref(db, "iti_kiloi/students"), (snap) => {
-  if(snap.exists()){
-    const d = snap.val();
-    students = d.students || [];
-    nextId = d.nextId || (students.length + 1);
-    window.students = students;
-    window.nextId = nextId;
-    if(window.currentUser) {
-      try{
-        const activePage = document.querySelector(".page.active");
-        if(activePage && activePage.id === "page-students"){
-          window.populateFilters && window.populateFilters();
-          window.renderStudents && window.renderStudents();
-        }
-        window.renderDashboard && window.renderDashboard();
-      }catch(e){}
-    }
-  }
-});
-
-onValue(ref(db, "iti_kiloi/users"), (snap) => {
-  if(snap.exists()){
-    window.users = snap.val();
-    if(window.currentUser) { try{ window.renderUsers(); }catch(e){} }
-  }
-});
-
-onValue(ref(db, "iti_kiloi/trades"), (snap) => {
-  if(snap.exists()){
-    window.trades = snap.val();
-    if(window.currentUser) { try{ window.renderTrades(); }catch(e){} }
-  }
-});
-
-onValue(ref(db, "iti_kiloi/log"), (snap) => {
-  if(snap.exists()){
-    window.activityLog = snap.val() || [];
-    if(window.currentUser) { try{ window.renderActivity(); }catch(e){} }
-  }
-});
-
-console.log("✅ Firebase Realtime Database connected!");
+console.log("✅ Firebase connected!");
 </script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -739,15 +689,15 @@ function setSaveInd(s){
 
 function persistAll(){
   setSaveInd("saving");
-  if(window._firebaseReady){
-    const db=window._firebaseDB, r=window._firebaseRef, s=window._firebaseSet;
+  if(window._firebaseReady && window._db){
+    const db=window._db;
     Promise.all([
-      s(r(db,"iti_kiloi/students"),{students,nextId}),
-      s(r(db,"iti_kiloi/users"),users),
-      s(r(db,"iti_kiloi/trades"),trades),
-      s(r(db,"iti_kiloi/log"),activityLog)
+      db.ref("iti_kiloi/students").set({students,nextId}),
+      db.ref("iti_kiloi/users").set(users),
+      db.ref("iti_kiloi/trades").set(trades),
+      db.ref("iti_kiloi/log").set(activityLog)
     ]).then(()=>setSaveInd("saved")).catch(e=>{
-      console.error("Firebase error:",e);
+      console.error("Firebase save error:",e);
       lsSet("iti_kiloi_students",{students,nextId});
       lsSet("iti_kiloi_users",users);
       lsSet("iti_kiloi_trades",trades);
@@ -767,37 +717,71 @@ function persistAll(){
 // INIT
 // ═══════════════════════════════════════════════
 window.addEventListener("load",()=>{
-  // Expose globals for Firebase listeners
-  window.students = students;
-  window.nextId = nextId;
-  window.users = users;
-  window.trades = trades;
-  window.activityLog = activityLog;
-  window.currentUser = currentUser;
-  window.renderStudents = ()=>{populateFilters();renderStudents(false);};
-  window.populateFilters = populateFilters;
-  window.renderUsers = renderUsers;
-  window.renderTrades = renderTrades;
-  window.renderActivity = renderActivity;
-  window.renderDashboard = renderDashboard;
+  // Expose render functions globally
 
   // Firebase se load karo — agar nahi mila to localStorage fallback
   function loadFromFirebase(){
-    if(!window._firebaseReady){ loadFromLocalStorage(); return; }
-    const db=window._firebaseDB, r=window._firebaseRef, g=window._firebaseGet;
-    g(r(db,"iti_kiloi/students")).then(snap=>{
-      if(snap.exists()&&snap.val().students&&snap.val().students.length){
-        const d=snap.val(); students=d.students; nextId=d.nextId||students.length+1;
-        window.students=students; window.nextId=nextId;
+    if(!window._firebaseReady||!window._db){ loadFromLocalStorage(); renderAfterLoad(); return; }
+    const db=window._db;
+    // Load all data at once
+    db.ref("iti_kiloi").once("value").then(snap=>{
+      if(snap.exists()){
+        const d=snap.val();
+        if(d.students&&d.students.students&&d.students.students.length){
+          students=d.students.students; nextId=d.students.nextId||students.length+1;
+        } else {
+          students=JSON.parse(JSON.stringify(SAMPLE)); nextId=6;
+          db.ref("iti_kiloi/students").set({students,nextId});
+        }
+        if(d.users) users=d.users;
+        if(d.trades) trades=d.trades;
+        if(d.log) activityLog=d.log;
       } else {
+        // First time — save sample data
         students=JSON.parse(JSON.stringify(SAMPLE)); nextId=6;
-        window._firebaseSet(r(db,"iti_kiloi/students"),{students,nextId});
+        db.ref("iti_kiloi/students").set({students,nextId});
       }
-    }).catch(()=>loadFromLocalStorage());
-    g(r(db,"iti_kiloi/users")).then(snap=>{if(snap.exists()){users=snap.val();window.users=users;}});
-    g(r(db,"iti_kiloi/trades")).then(snap=>{if(snap.exists()){trades=snap.val();window.trades=trades;}});
-    g(r(db,"iti_kiloi/log")).then(snap=>{if(snap.exists()){activityLog=snap.val();window.activityLog=activityLog;}});
-    console.log("✅ Data loaded from Firebase!");
+      renderAfterLoad();
+      setupRealtimeListeners();
+      console.log("✅ Data loaded from Firebase! Students:",students.length);
+    }).catch(e=>{
+      console.error("Firebase load error:",e);
+      loadFromLocalStorage();
+      renderAfterLoad();
+    });
+  }
+
+  function setupRealtimeListeners(){
+    const db=window._db;
+    db.ref("iti_kiloi/students").on("value",snap=>{
+      if(snap.exists()&&snap.val().students){
+        students=snap.val().students; nextId=snap.val().nextId||students.length+1;
+        if(currentUser){
+          const pg=document.querySelector(".page.active");
+          if(pg&&pg.id==="page-students"){populateFilters();renderStudents(false);}
+          renderDashboard();
+        }
+      }
+    });
+    db.ref("iti_kiloi/users").on("value",snap=>{
+      if(snap.exists()){users=snap.val();if(currentUser)try{renderUsers();}catch(e){}}
+    });
+    db.ref("iti_kiloi/trades").on("value",snap=>{
+      if(snap.exists()){trades=snap.val();if(currentUser)try{renderTrades();}catch(e){}}
+    });
+    db.ref("iti_kiloi/log").on("value",snap=>{
+      if(snap.exists()){activityLog=snap.val()||[];if(currentUser)try{renderActivity();}catch(e){}}
+    });
+  }
+
+  function renderAfterLoad(){
+    // If user already logged in (e.g. page refresh), re-render
+    if(currentUser){
+      buildNav();
+      const pg=document.querySelector(".page.active");
+      if(pg&&pg.id==="page-students"){populateFilters();renderStudents(true);}
+      renderDashboard();
+    }
   }
 
   function loadFromLocalStorage(){
@@ -836,7 +820,8 @@ function doLogin(){
     document.getElementById("sbAvatar").textContent=u[0].toUpperCase();
     document.getElementById("sbName").textContent=users[u].name;
     document.getElementById("sbRole").textContent=users[u].role==="admin"?"Administrator":"Staff Member";
-    logActivity("LOGIN", `${users[u].name} ne login kiya`);
+    window.currentUser = currentUser;
+    logActivity("LOGIN", `${users[u].name} logged in`);
     buildNav();showPage("dashboard");
     document.getElementById("lErr").style.display="none";
   } else document.getElementById("lErr").style.display="block";
@@ -844,7 +829,7 @@ function doLogin(){
 document.addEventListener("keydown",e=>{if(e.key==="Enter"&&!currentUser) doLogin();});
 
 function doLogout(){
-  logActivity("LOGOUT", `${currentUser.name} ne logout kiya`);
+  logActivity("LOGOUT", `${currentUser.name} logged out`);
   currentUser=null;
   document.getElementById("app").style.display="none";
   document.getElementById("loginScreen").style.display="flex";
