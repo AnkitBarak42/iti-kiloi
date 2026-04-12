@@ -120,7 +120,7 @@ nav{flex:1;padding:6px 0}
 
 /* ── TABLE ── */
 .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
-.tbl-scroll{overflow-x:auto;overflow-y:auto;max-height:65vh;-webkit-overflow-scrolling:touch}
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse;min-width:500px}
 th{padding:9px 12px;text-align:left;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);background:var(--bg2);white-space:nowrap}
 td{padding:10px 12px;font-size:13px;border-bottom:1px solid rgba(30,37,53,.6);vertical-align:middle}
@@ -977,7 +977,7 @@ function populateFilters(){
   document.getElementById("fTrade2").innerHTML=trades.map(t=>`<option>${t}</option>`).join("");
 }
 
-let stuPage=1;const STU_PER_PAGE=25;
+let stuPage=1;const STU_PER_PAGE=50;
 
 function renderStudents(resetPage){
   if(resetPage) stuPage=1;

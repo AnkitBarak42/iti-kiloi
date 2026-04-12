@@ -55,12 +55,15 @@ html = html.replace(
 components.html(
     f"""
     <script>
-      // Tell parent iframe to resize to full viewport height
+      // Resize iframe to full screen height
       const h = window.screen.height;
-      window.frameElement && (window.frameElement.style.height = h + 'px');
+      if(window.frameElement) {{
+        window.frameElement.style.height = h + 'px';
+        window.frameElement.style.minHeight = '100vh';
+      }}
     </script>
     {html}
     """,
-    height=950,
-    scrolling=False,
+    height=1200,
+    scrolling=True,
 )
