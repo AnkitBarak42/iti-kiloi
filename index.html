@@ -453,15 +453,21 @@ tr:hover td{background:rgba(255,255,255,.015)}
         <!-- IMPORT SECTION -->
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px">
           <div class="card" style="padding:22px;margin-bottom:0">
-            <h4 style="font-size:14px;font-weight:700;margin-bottom:8px">⬆️ Import from CSV</h4>
-            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6">CSV file se bulk students import karein.</p>
-            <div class="drop-zone" onclick="document.getElementById('csvFile').click()"
+            <h4 style="font-size:14px;font-weight:700;margin-bottom:8px">⬆️ Import Students</h4>
+            <p style="font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.6">CSV, Excel ya PDF file se bulk students import karein.</p>
+            <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+              <span style="background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:6px;padding:3px 10px;font-size:11px;color:var(--green)">✅ CSV</span>
+              <span style="background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);border-radius:6px;padding:3px 10px;font-size:11px;color:var(--blue)">✅ Excel (.xlsx/.xls)</span>
+              <span style="background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:6px;padding:3px 10px;font-size:11px;color:var(--red)">✅ PDF</span>
+            </div>
+            <div class="drop-zone" onclick="document.getElementById('importFile').click()"
               ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
               ondragleave="this.style.borderColor='var(--border)'"
-              ondrop="handleDrop(event)">
+              ondrop="handleImportDrop(event)">
               <div style="font-size:32px;margin-bottom:8px">📁</div>
-              <div style="font-size:13px;color:var(--muted)">Click karein ya CSV drag karein</div>
-              <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleCSV(event)">
+              <div style="font-size:13px;color:var(--muted)">Click karein ya file drag karein</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px">CSV, Excel (.xlsx/.xls), PDF supported</div>
+              <input type="file" id="importFile" accept=".csv,.xlsx,.xls,.pdf" style="display:none" onchange="handleImportFile(event)">
             </div>
             <div id="impResult" style="display:none;margin-top:12px;background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);border-radius:8px;padding:10px 13px;font-size:13px"></div>
             <button class="btn btn-secondary btn-sm" style="margin-top:12px" onclick="downloadTemplate()">⬇️ Sample Template</button>
@@ -1307,9 +1313,25 @@ function processJsonRestore(file){
   reader.readAsText(file,"UTF-8");
 }
 
+// ── IMPORT HANDLERS ──
+function handleImportDrop(e){
+  e.preventDefault();e.currentTarget.style.borderColor="var(--border)";
+  const file=e.dataTransfer.files[0];if(file) processImportFile(file);
+}
+function handleImportFile(e){if(e.target.files[0]) processImportFile(e.target.files[0]);}
+
+function processImportFile(file){
+  const ext=file.name.split(".").pop().toLowerCase();
+  if(ext==="csv") processCSV(file);
+  else if(ext==="xlsx"||ext==="xls") processExcel(file);
+  else if(ext==="pdf") processPDF(file);
+  else showToast("❌ Sirf CSV, Excel ya PDF allowed hai!","err");
+}
+
+// ── CSV Import ──
 function handleDrop(e){
   e.preventDefault();e.currentTarget.style.borderColor="var(--border)";
-  const file=e.dataTransfer.files[0];if(file) processCSV(file);
+  const file=e.dataTransfer.files[0];if(file) processImportFile(file);
 }
 function handleCSV(e){if(e.target.files[0]) processCSV(e.target.files[0]);}
 
@@ -1329,11 +1351,73 @@ function processCSV(file){
     });
     persistAll();
     logActivity("IMPORT_CSV", `CSV import kiya — ${added} students add hue, ${skipped} rows skip`);
-    const res=document.getElementById("impResult");
-    res.style.display="block";res.innerHTML=`✅ <b>${added}</b> students import ho gaye!${skipped>0?` (${skipped} rows skip)`:""} <button class="btn btn-secondary btn-sm" style="margin-left:8px" onclick="showPage('students')">View →</button>`;
-    showToast(`${added} students import ho gaye ✅`);
+    showImportResult(added,skipped,"CSV");
   };
   reader.readAsText(file,"UTF-8");
+}
+
+// ── Excel Import ──
+function processExcel(file){
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const wb=XLSX.read(ev.target.result,{type:"array"});
+      const ws=wb.Sheets[wb.SheetNames[0]];
+      const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:""});
+      let added=0,skipped=0;
+      rows.slice(1).forEach(cols=>{
+        const name=String(cols[0]||"").trim();
+        if(name){
+          students.push({
+            id:nextId++,
+            name:name,
+            roll:String(cols[1]||"").trim(),
+            mobile:String(cols[2]||"").trim(),
+            aadhaar:String(cols[3]||"").trim(),
+            address:String(cols[4]||"").trim(),
+            trade:String(cols[5]||"Other").trim()||"Other",
+            session:String(cols[6]||"2024-25").trim()||"2024-25",
+            status:["Placed","Apprenticeship","Studying","Unemployed"].includes(String(cols[7]).trim())?String(cols[7]).trim():"Unemployed",
+            company:String(cols[8]||"").trim(),
+            remarks:String(cols[9]||"").trim()
+          });
+          added++;
+        }else skipped++;
+      });
+      persistAll();
+      logActivity("IMPORT_CSV",`Excel import kiya — ${added} students add hue, ${skipped} rows skip`);
+      showImportResult(added,skipped,"Excel");
+    }catch(err){
+      showToast("❌ Excel file read nahi ho saki!","err");
+      console.error(err);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+// ── PDF Import ──
+function processPDF(file){
+  const res=document.getElementById("impResult");
+  res.style.display="block";
+  res.style.background="rgba(245,158,11,.1)";
+  res.style.borderColor="rgba(245,158,11,.3)";
+  res.innerHTML=`⚠️ <b>PDF se direct import limited hai.</b><br><br>
+    PDF mein structured data nahi hota, isliye manually add karna hoga.<br><br>
+    <b>Suggestion:</b> PDF ko Excel/CSV mein convert karein:<br>
+    1. <a href="https://smallpdf.com/pdf-to-excel" target="_blank" style="color:var(--accent)">smallpdf.com/pdf-to-excel</a> use karein<br>
+    2. Phir Excel file import karein ✅<br><br>
+    Ya <button class="btn btn-secondary btn-sm" onclick="downloadTemplate()">⬇️ Template Download</button> karke manually fill karein.`;
+  showToast("⚠️ PDF ko Excel mein convert karke import karein","err");
+}
+
+function showImportResult(added,skipped,type){
+  const res=document.getElementById("impResult");
+  res.style.display="block";
+  res.style.background="rgba(34,197,94,.1)";
+  res.style.borderColor="rgba(34,197,94,.3)";
+  res.innerHTML=`✅ <b>${added}</b> students ${type} se import ho gaye!${skipped>0?` (${skipped} rows skip)`:""}
+    <button class="btn btn-secondary btn-sm" style="margin-left:8px" onclick="showPage('students')">View →</button>`;
+  showToast(`${added} students import ho gaye ✅`);
 }
 
 function downloadTemplate(){
