@@ -60,7 +60,8 @@ input,select,textarea,button{font-family:inherit}
 #loginScreen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background:radial-gradient(ellipse at 50% 0%,rgba(245,158,11,.08) 0%,transparent 60%)}
 .login-box{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:36px 28px;width:380px;max-width:100%;box-shadow:0 0 100px rgba(0,0,0,.8)}
 .login-logo{text-align:center;margin-bottom:28px}
-.logo-circle{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:inline-flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#000;margin-bottom:12px;box-shadow:0 0 30px rgba(245,158,11,.3)}
+.logo-circle{width:80px;height:80px;border-radius:12px;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;box-shadow:0 0 30px rgba(245,158,11,.3);background:#e8eaf0}
+.logo-circle img{width:100%;height:100%;object-fit:contain}
 .login-logo h1{font-size:26px;font-weight:900;letter-spacing:2px}
 .login-logo h1 span{color:var(--accent)}
 .login-logo p{font-size:12px;color:var(--muted);margin-top:4px}
@@ -80,7 +81,8 @@ input,select,textarea,button{font-family:inherit}
 /* ── SIDEBAR ── */
 .sidebar{width:220px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;position:fixed;left:0;top:0;height:100vh;z-index:100;overflow-y:auto;transition:transform .3s ease;will-change:transform}
 .sb-logo{padding:16px 14px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
-.sb-logo-icon{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;color:#000;flex-shrink:0}
+.sb-logo-icon{width:42px;height:42px;border-radius:8px;overflow:hidden;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:#e8eaf0}
+.sb-logo-icon img{width:100%;height:100%;object-fit:contain}
 .sb-logo h2{font-size:14px;font-weight:900;letter-spacing:1px}
 .sb-logo h2 span{color:var(--accent)}
 .sb-logo p{font-size:10px;color:var(--muted);margin-top:1px}
@@ -241,7 +243,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-logo">
-      <div class="logo-circle">ITI</div>
+      <div class="logo-circle"><img src="https://upload.wikimedia.org/wikipedia/en/thumb/e/e5/Industrial_Training_Institutes_Logo.svg/800px-Industrial_Training_Institutes_Logo.svg.png" alt="ITI Logo" onerror="this.parentElement.innerHTML='<span style=\'font-size:22px;font-weight:900;color:#f59e0b\'>ITI</span>'"></div>
       <h1>ITI <span>KILOI</span></h1>
       <p>Placement Management System</p>
     </div>
@@ -330,7 +332,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
     <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
       <div class="sb-logo">
-        <div class="sb-logo-icon">ITI</div>
+        <div class="sb-logo-icon"><img src="https://upload.wikimedia.org/wikipedia/en/thumb/e/e5/Industrial_Training_Institutes_Logo.svg/800px-Industrial_Training_Institutes_Logo.svg.png" alt="ITI" onerror="this.parentElement.innerHTML='<span style=\'font-size:11px;font-weight:900;color:#f59e0b\'>ITI</span>'"></div>
         <div><h2>ITI <span>KILOI</span></h2><p>Placement System</p></div>
       </div>
       <div class="sb-user">
@@ -643,6 +645,47 @@ tr:hover td{background:rgba(255,255,255,.015)}
         </div>
       </div>
 
+      <!-- JOB FAIR -->
+      <div class="page" id="page-jobfair">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px">
+          <div class="ph" style="margin-bottom:0"><h1>🏢 Job Fair</h1><p>Monthly Job Fair records — Firebase synced ☁️</p></div>
+          <button class="btn btn-primary" onclick="openAddJobFairModal()">➕ Add Entry</button>
+        </div>
+
+        <!-- Filter Row -->
+        <div class="card" style="margin-bottom:16px">
+          <div class="filter-row" style="flex-wrap:wrap;gap:10px">
+            <select id="jfMonth" onchange="renderJobFair()" style="padding:7px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none">
+              <option value="">All Months</option>
+              <option value="01">January</option><option value="02">February</option><option value="03">March</option>
+              <option value="04">April</option><option value="05">May</option><option value="06">June</option>
+              <option value="07">July</option><option value="08">August</option><option value="09">September</option>
+              <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+            </select>
+            <select id="jfYear" onchange="renderJobFair()" style="padding:7px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none">
+              <option value="">All Years</option>
+              <option>2020</option><option>2021</option><option>2022</option><option>2023</option>
+              <option>2024</option><option>2025</option><option>2026</option>
+            </select>
+            <select id="jfTrade" onchange="renderJobFair()" style="padding:7px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none">
+              <option value="">All Trades</option>
+            </select>
+            <input id="jfSearch" placeholder="🔍 Name, Reg No, Company..." oninput="renderJobFair()"
+              style="flex:1;min-width:180px;padding:7px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none">
+            <span class="cnt-label" id="jfCount"></span>
+          </div>
+          <div class="tbl-wrap">
+            <table>
+              <thead><tr>
+                <th>#</th><th>Name</th><th>Reg No.</th><th>Mobile</th><th>Email</th>
+                <th>Trade</th><th>Session</th><th>Company</th><th>Month/Year</th><th>Remark</th><th>Actions</th>
+              </tr></thead>
+              <tbody id="jfBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </div><!-- /main -->
   </div><!-- /layout -->
 </div><!-- /app -->
@@ -661,20 +704,9 @@ tr:hover td{background:rgba(255,255,255,.015)}
     <div class="form-grid">
       <div class="fg2"><label>Trade *</label><select id="fTrade2"></select></div>
       <div class="fg2"><label>Session</label>
-        <select id="fSession2" onchange="handleSessionChange(this)">
+        <select id="fSession2">
           <option>2020-21</option><option>2021-22</option><option>2022-23</option><option>2023-24</option><option selected>2024-25</option><option>2025-26</option>
-          <option value="__custom__" style="color:var(--accent);font-weight:700">➕ Add Custom Session...</option>
         </select>
-        <div id="customSessionBox" style="display:none;margin-top:6px;display:none">
-          <div style="display:flex;gap:6px;align-items:center">
-            <input id="customSessionInput" placeholder="e.g. 2026-27" maxlength="7"
-              style="flex:1;padding:8px 10px;background:var(--bg2);border:1px solid var(--accent);border-radius:8px;color:var(--text);font-size:13px;outline:none"
-              onkeydown="if(event.key==='Enter')addCustomSession()">
-            <button onclick="addCustomSession()" style="padding:8px 12px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#000;font-weight:700;font-size:13px;cursor:pointer">Add</button>
-            <button onclick="cancelCustomSession()" style="padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:13px;cursor:pointer">✕</button>
-          </div>
-          <div style="font-size:10px;color:var(--muted);margin-top:4px">Format: YYYY-YY (e.g. 2026-27)</div>
-        </div>
       </div>
       <div class="fg2"><label>Status</label>
         <select id="fStatus2"><option>Placed</option><option>Apprenticeship</option><option>Self Employed</option><option>Studying</option><option>Unemployed</option></select>
@@ -725,6 +757,46 @@ tr:hover td{background:rgba(255,255,255,.015)}
     <div class="modal-foot">
       <button class="btn btn-secondary" onclick="closeModal('userModal')">Cancel</button>
       <button class="btn btn-primary" onclick="saveUser()">💾 Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- JOB FAIR MODAL -->
+<div class="modal-overlay" id="jobFairModal">
+  <div class="modal">
+    <div class="modal-title" id="jfModalTitle">🏢 Add Job Fair Entry</div>
+    <div class="form-grid">
+      <div class="fg2"><label>Full Name *</label><input id="jfName" placeholder="Student full name"></div>
+      <div class="fg2"><label>Registration No. *</label><input id="jfReg" placeholder="e.g. KLI/2024/001"></div>
+      <div class="fg2"><label>Mobile No</label><input id="jfMob" placeholder="10 digit" maxlength="10"></div>
+      <div class="fg2"><label>Email (Gmail)</label><input id="jfEmail" placeholder="student@gmail.com"></div>
+      <div class="fg2"><label>Trade</label><select id="jfTrade2"></select></div>
+      <div class="fg2"><label>Session</label>
+        <select id="jfSession">
+          <option>2020-21</option><option>2021-22</option><option>2022-23</option>
+          <option>2023-24</option><option selected>2024-25</option><option>2025-26</option>
+        </select>
+      </div>
+      <div class="fg2"><label>Company Name *</label><input id="jfCompany" placeholder="Company name"></div>
+      <div class="fg2"><label>Month *</label>
+        <select id="jfMonthM">
+          <option value="01">January</option><option value="02">February</option><option value="03">March</option>
+          <option value="04">April</option><option value="05">May</option><option value="06">June</option>
+          <option value="07">July</option><option value="08">August</option><option value="09">September</option>
+          <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+        </select>
+      </div>
+      <div class="fg2"><label>Year *</label>
+        <select id="jfYearM">
+          <option>2020</option><option>2021</option><option>2022</option><option>2023</option>
+          <option>2024</option><option selected>2025</option><option>2026</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg2"><label>Remark</label><input id="jfRemark" placeholder="Any notes..."></div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" onclick="closeModal('jobFairModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveJobFairEntry()">💾 Save</button>
     </div>
   </div>
 </div>
@@ -1076,6 +1148,7 @@ const NAV=[
   {id:"activity", icon:"🕵️",label:"Activity Log"},
   {id:"print",    icon:"🖨️",label:"Print / PDF"},
   {id:"import",   icon:"📥",label:"Import / Export"},
+  {id:"jobfair",  icon:"🏢",label:"Job Fair"},
 ];
 const ADMIN_NAV=[
   {id:"trades",icon:"🔧",label:"Trades"},
@@ -1133,6 +1206,7 @@ function showPage(name){
   }
   if(name==="trades") renderTrades();
   if(name==="users"){ renderUsers(); renderPendingRequests(); renderProcessedRequests(); }
+  if(name==="jobfair"){ loadJobFair(); }
 }
 function toggleSidebar(){document.getElementById("sidebar").classList.toggle("open");document.getElementById("overlayBg").classList.toggle("open");}
 function closeSidebar(){document.getElementById("sidebar").classList.remove("open");document.getElementById("overlayBg").classList.remove("open");}
@@ -2116,53 +2190,151 @@ function togglePw(){
 }
 
 // ═══════════════════════════════════════════════
-// CUSTOM SESSION
+// JOB FAIR
 // ═══════════════════════════════════════════════
-function handleSessionChange(sel){
-  if(sel.value==="__custom__"){
-    document.getElementById("customSessionBox").style.display="block";
-    document.getElementById("customSessionInput").focus();
+let jobFairData = [];
+let editingJFId = null;
+let jfNextId = 1;
+
+function lsGetJF(){ try{ return JSON.parse(localStorage.getItem("iti_kiloi_jobfair")||"[]"); }catch(e){ return []; } }
+function lsSetJF(d){ localStorage.setItem("iti_kiloi_jobfair", JSON.stringify(d)); }
+
+function loadJobFair(){
+  if(window._firebaseReady && window._db){
+    window._db.ref("iti_kiloi/jobfair").on("value", snap=>{
+      jobFairData = snap.exists() ? Object.values(snap.val()) : [];
+      jfNextId = jobFairData.length ? Math.max(...jobFairData.map(j=>j.id||0))+1 : 1;
+      renderJobFair();
+    });
   } else {
-    document.getElementById("customSessionBox").style.display="none";
+    jobFairData = lsGetJF();
+    jfNextId = jobFairData.length ? Math.max(...jobFairData.map(j=>j.id||0))+1 : 1;
+    renderJobFair();
   }
 }
 
-function addCustomSession(){
-  const inp=document.getElementById("customSessionInput");
-  const val=inp.value.trim();
-  // Validate format YYYY-YY
-  if(!/^\d{4}-\d{2}$/.test(val)){showToast("Format galat hai! e.g. 2026-27","err");return;}
-  const sel=document.getElementById("fSession2");
-  // Check if already exists
-  const existing=[...sel.options].map(o=>o.value);
-  if(existing.includes(val)){
-    // Just select it
-    sel.value=val;
-    document.getElementById("customSessionBox").style.display="none";
-    inp.value="";
+function persistJF(){
+  lsSetJF(jobFairData);
+  if(window._firebaseReady && window._db){
+    const obj={};
+    jobFairData.forEach(j=>{ obj["jf_"+j.id]=j; });
+    window._db.ref("iti_kiloi/jobfair").set(obj);
+  }
+}
+
+function openAddJobFairModal(){
+  editingJFId=null;
+  document.getElementById("jfModalTitle").textContent="🏢 Add Job Fair Entry";
+  ["jfName","jfReg","jfMob","jfEmail","jfCompany","jfRemark"].forEach(id=>document.getElementById(id).value="");
+  document.getElementById("jfSession").value="2024-25";
+  const sel=document.getElementById("jfTrade2");
+  sel.innerHTML=trades.map(t=>`<option>${t}</option>`).join("");
+  const now=new Date();
+  document.getElementById("jfMonthM").value=String(now.getMonth()+1).padStart(2,"0");
+  document.getElementById("jfYearM").value=String(now.getFullYear());
+  document.getElementById("jobFairModal").classList.add("open");
+}
+
+function openEditJFModal(id){
+  const j=jobFairData.find(x=>x.id===id);
+  if(!j) return;
+  editingJFId=id;
+  document.getElementById("jfModalTitle").textContent="✏️ Edit Job Fair Entry";
+  document.getElementById("jfName").value=j.name||"";
+  document.getElementById("jfReg").value=j.reg||"";
+  document.getElementById("jfMob").value=j.mob||"";
+  document.getElementById("jfEmail").value=j.email||"";
+  document.getElementById("jfCompany").value=j.company||"";
+  document.getElementById("jfRemark").value=j.remark||"";
+  document.getElementById("jfSession").value=j.session||"2024-25";
+  const sel=document.getElementById("jfTrade2");
+  sel.innerHTML=trades.map(t=>`<option>${t}</option>`).join("");
+  sel.value=j.trade||"";
+  document.getElementById("jfMonthM").value=j.month||"01";
+  document.getElementById("jfYearM").value=j.year||"2025";
+  document.getElementById("jobFairModal").classList.add("open");
+}
+
+function saveJobFairEntry(){
+  const name=document.getElementById("jfName").value.trim();
+  const reg=document.getElementById("jfReg").value.trim();
+  const company=document.getElementById("jfCompany").value.trim();
+  if(!name||!reg||!company){showToast("Name, Reg No aur Company zaroori hain!","err");return;}
+  const entry={
+    id: editingJFId||jfNextId++,
+    name, reg,
+    mob:document.getElementById("jfMob").value.trim(),
+    email:document.getElementById("jfEmail").value.trim(),
+    trade:document.getElementById("jfTrade2").value,
+    session:document.getElementById("jfSession").value,
+    company,
+    month:document.getElementById("jfMonthM").value,
+    year:document.getElementById("jfYearM").value,
+    remark:document.getElementById("jfRemark").value.trim(),
+  };
+  if(editingJFId){
+    const idx=jobFairData.findIndex(j=>j.id===editingJFId);
+    if(idx>-1) jobFairData[idx]=entry;
+  } else {
+    jobFairData.push(entry);
+  }
+  persistJF();
+  closeModal("jobFairModal");
+  renderJobFair();
+  showToast(editingJFId?"Entry updated ✅":"Entry added ✅");
+}
+
+function deleteJFEntry(id){
+  if(!confirm("Yeh entry delete karein?")) return;
+  jobFairData=jobFairData.filter(j=>j.id!==id);
+  persistJF();
+  renderJobFair();
+  showToast("Deleted ✅");
+}
+
+const MONTH_NAMES=["","January","February","March","April","May","June","July","August","September","October","November","December"];
+
+function renderJobFair(){
+  const jfTradeF=document.getElementById("jfTrade");
+  if(jfTradeF){
+    const cur=jfTradeF.value;
+    jfTradeF.innerHTML='<option value="">All Trades</option>'+trades.map(t=>`<option>${t}</option>`).join("");
+    jfTradeF.value=cur;
+  }
+  const mon=document.getElementById("jfMonth")?.value||"";
+  const yr=document.getElementById("jfYear")?.value||"";
+  const tr=document.getElementById("jfTrade")?.value||"";
+  const q=(document.getElementById("jfSearch")?.value||"").toLowerCase();
+  let data=jobFairData.filter(j=>{
+    return (!mon||j.month===mon)&&(!yr||j.year===String(yr))
+      &&(!tr||j.trade===tr)
+      &&(!q||(j.name||"").toLowerCase().includes(q)||(j.reg||"").toLowerCase().includes(q)||(j.company||"").toLowerCase().includes(q));
+  });
+  const countEl=document.getElementById("jfCount");
+  if(countEl) countEl.textContent=data.length+" entries";
+  const tbody=document.getElementById("jfBody");
+  if(!tbody) return;
+  if(!data.length){
+    tbody.innerHTML=`<tr><td colspan="11" class="empty-td">📭 Koi entry nahi mili — Month/Year filter change karein ya entry add karein</td></tr>`;
     return;
   }
-  // Add to SESSIONS array
-  if(!SESSIONS.includes(val)) SESSIONS.push(val);
-  // Add new option before the __custom__ option
-  const customOpt=sel.querySelector('option[value="__custom__"]');
-  const newOpt=document.createElement("option");
-  newOpt.value=val;newOpt.textContent=val;
-  sel.insertBefore(newOpt,customOpt);
-  sel.value=val;
-  document.getElementById("customSessionBox").style.display="none";
-  inp.value="";
-  // Also update filter dropdowns
-  populateFilters();
-  showToast(`Session "${val}" add ho gaya ✅`);
-}
-
-function cancelCustomSession(){
-  const sel=document.getElementById("fSession2");
-  // revert to previously selected or default
-  sel.value="2024-25";
-  document.getElementById("customSessionBox").style.display="none";
-  document.getElementById("customSessionInput").value="";
+  tbody.innerHTML=data.map((j,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td><b>${j.name||"—"}</b></td>
+      <td style="color:var(--muted);font-size:12px">${j.reg||"—"}</td>
+      <td>${j.mob||"—"}</td>
+      <td style="font-size:12px">${j.email||"—"}</td>
+      <td>${j.trade||"—"}</td>
+      <td>${j.session||"—"}</td>
+      <td style="color:var(--accent);font-weight:600">${j.company||"—"}</td>
+      <td style="white-space:nowrap">${MONTH_NAMES[parseInt(j.month)]||j.month} ${j.year}</td>
+      <td style="color:var(--muted);font-size:12px">${j.remark||"—"}</td>
+      <td><div style="display:flex;gap:5px">
+        <button class="btn-icon bi-edit" onclick="openEditJFModal(${j.id})">✏️</button>
+        <button class="btn-icon bi-del" onclick="deleteJFEntry(${j.id})">🗑️</button>
+      </div></td>
+    </tr>`).join("");
 }
 
 // ═══════════════════════════════════════════════
