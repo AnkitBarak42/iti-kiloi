@@ -775,10 +775,21 @@ tr:hover td{background:rgba(255,255,255,.015)}
       <div class="fg2"><label>Email (Gmail)</label><input id="jfEmail" placeholder="student@gmail.com"></div>
       <div class="fg2"><label>Trade</label><select id="jfTrade2"></select></div>
       <div class="fg2"><label>Session</label>
-        <select id="jfSession">
+        <select id="jfSession" onchange="handleJFSessionChange(this)">
           <option>2020-21</option><option>2021-22</option><option>2022-23</option>
           <option>2023-24</option><option selected>2024-25</option><option>2025-26</option>
+          <option value="__custom__" style="color:var(--accent);font-weight:700">➕ Add Custom Session...</option>
         </select>
+        <div id="jfSessionCustomBox" style="display:none;margin-top:6px">
+          <div style="display:flex;gap:6px;align-items:center">
+            <input id="jfSessionInput" placeholder="e.g. 2026-27" maxlength="7"
+              style="flex:1;padding:8px 10px;background:var(--bg2);border:1px solid var(--accent);border-radius:8px;color:var(--text);font-size:13px;outline:none"
+              onkeydown="if(event.key===&#39;Enter&#39;)addCustomJFSession()">
+            <button onclick="addCustomJFSession()" style="padding:8px 12px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#000;font-weight:700;font-size:13px;cursor:pointer">Add</button>
+            <button onclick="cancelJFSession()" style="padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:13px;cursor:pointer">✕</button>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px">Format: YYYY-YY (e.g. 2026-27)</div>
+        </div>
       </div>
       <div class="fg2"><label>Company Name *</label><input id="jfCompany" placeholder="Company name"></div>
       <div class="fg2"><label>Month *</label>
@@ -2282,6 +2293,47 @@ function cancelJFYearModal(){
   buildYearOptions('jfYearM', curYear, false);
   document.getElementById('jfYearModalCustomBox').style.display = 'none';
   document.getElementById('jfYearModalInput').value = '';
+}
+
+
+function handleJFSessionChange(sel){
+  if(sel.value==="__custom__"){
+    document.getElementById("jfSessionCustomBox").style.display="block";
+    document.getElementById("jfSessionInput").focus();
+  } else {
+    document.getElementById("jfSessionCustomBox").style.display="none";
+  }
+}
+
+function addCustomJFSession(){
+  const inp=document.getElementById("jfSessionInput");
+  const val=inp.value.trim();
+  if(!/^\d{4}-\d{2}$/.test(val)){showToast("Format galat! e.g. 2026-27","err");return;}
+  const sel=document.getElementById("jfSession");
+  const existing=[...sel.options].map(o=>o.value);
+  if(existing.includes(val)){
+    sel.value=val;
+    document.getElementById("jfSessionCustomBox").style.display="none";
+    inp.value="";
+    return;
+  }
+  const customOpt=sel.querySelector('option[value="__custom__"]');
+  const newOpt=document.createElement("option");
+  newOpt.value=val; newOpt.textContent=val;
+  sel.insertBefore(newOpt, customOpt);
+  sel.value=val;
+  document.getElementById("jfSessionCustomBox").style.display="none";
+  inp.value="";
+  // also add to main SESSIONS so it appears everywhere
+  if(!SESSIONS.includes(val)) SESSIONS.push(val);
+  showToast('Session "'+val+'" add ho gaya ✅');
+}
+
+function cancelJFSession(){
+  const sel=document.getElementById("jfSession");
+  sel.value="2024-25";
+  document.getElementById("jfSessionCustomBox").style.display="none";
+  document.getElementById("jfSessionInput").value="";
 }
 
 function loadJobFair(){
