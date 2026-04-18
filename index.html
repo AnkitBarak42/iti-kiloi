@@ -662,11 +662,14 @@ tr:hover td{background:rgba(255,255,255,.015)}
               <option value="07">July</option><option value="08">August</option><option value="09">September</option>
               <option value="10">October</option><option value="11">November</option><option value="12">December</option>
             </select>
-            <select id="jfYear" onchange="renderJobFair()" style="padding:7px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none">
-              <option value="">All Years</option>
-              <option>2020</option><option>2021</option><option>2022</option><option>2023</option>
-              <option>2024</option><option>2025</option><option>2026</option>
-            </select>
+            <select id="jfYear" onchange="handleJFYearFilter(this)" style="padding:7px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none"></select>
+            <div id="jfYearFilterCustomBox" style="display:none;gap:6px;align-items:center">
+              <input id="jfYearFilterInput" placeholder="e.g. 2032" maxlength="4"
+                style="width:90px;padding:7px 10px;background:var(--bg2);border:1px solid var(--accent);border-radius:8px;color:var(--text);font-size:13px;outline:none"
+                onkeydown="if(event.key==='Enter')addCustomJFYearFilter()">
+              <button onclick="addCustomJFYearFilter()" style="padding:7px 11px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#000;font-weight:700;font-size:12px;cursor:pointer">Add</button>
+              <button onclick="cancelJFYearFilter()" style="padding:7px 9px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer">✕</button>
+            </div>
             <select id="jfTrade" onchange="renderJobFair()" style="padding:7px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;outline:none">
               <option value="">All Trades</option>
             </select>
@@ -787,10 +790,17 @@ tr:hover td{background:rgba(255,255,255,.015)}
         </select>
       </div>
       <div class="fg2"><label>Year *</label>
-        <select id="jfYearM">
-          <option>2020</option><option>2021</option><option>2022</option><option>2023</option>
-          <option>2024</option><option selected>2025</option><option>2026</option>
-        </select>
+        <select id="jfYearM" onchange="handleJFYearModal(this)"></select>
+        <div id="jfYearModalCustomBox" style="display:none;margin-top:6px">
+          <div style="display:flex;gap:6px;align-items:center">
+            <input id="jfYearModalInput" placeholder="e.g. 2032" maxlength="4"
+              style="flex:1;padding:8px 10px;background:var(--bg2);border:1px solid var(--accent);border-radius:8px;color:var(--text);font-size:13px;outline:none"
+              onkeydown="if(event.key===&apos;Enter&apos;)addCustomJFYearModal()">
+            <button onclick="addCustomJFYearModal()" style="padding:8px 12px;background:linear-gradient(135deg,var(--accent),var(--accent2));border:none;border-radius:8px;color:#000;font-weight:700;font-size:13px;cursor:pointer">Add</button>
+            <button onclick="cancelJFYearModal()" style="padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:13px;cursor:pointer">✕</button>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px">4 digit year daalo (e.g. 2032)</div>
+        </div>
       </div>
     </div>
     <div class="fg2"><label>Remark</label><input id="jfRemark" placeholder="Any notes..."></div>
@@ -2199,7 +2209,83 @@ let jfNextId = 1;
 function lsGetJF(){ try{ return JSON.parse(localStorage.getItem("iti_kiloi_jobfair")||"[]"); }catch(e){ return []; } }
 function lsSetJF(d){ localStorage.setItem("iti_kiloi_jobfair", JSON.stringify(d)); }
 
+// ── Year dropdown helpers ──
+let jfExtraYears = []; // custom years added by user
+
+function buildYearOptions(selectId, selectedVal, includeAll){
+  const sel = document.getElementById(selectId);
+  if(!sel) return;
+  const curYear = new Date().getFullYear();
+  const baseYears = [];
+  for(let y = 2020; y <= curYear + 10; y++) baseYears.push(y);
+  // merge custom years
+  const allYears = [...new Set([...baseYears, ...jfExtraYears])].sort((a,b)=>a-b);
+  let html = includeAll ? '<option value="">All Years</option>' : '';
+  allYears.forEach(y => {
+    html += `<option value="${y}" ${String(y)===String(selectedVal)?'selected':''}>${y}</option>`;
+  });
+  html += `<option value="__custom__" style="color:var(--accent);font-weight:700">➕ Add Custom Year...</option>`;
+  sel.innerHTML = html;
+}
+
+function handleJFYearFilter(sel){
+  if(sel.value === '__custom__'){
+    document.getElementById('jfYearFilterCustomBox').style.display = 'flex';
+  } else {
+    document.getElementById('jfYearFilterCustomBox').style.display = 'none';
+    renderJobFair();
+  }
+}
+
+function addCustomJFYearFilter(){
+  const inp = document.getElementById('jfYearFilterInput');
+  const val = inp.value.trim();
+  if(!/^\d{4}$/.test(val)){ showToast('Sirf 4 digit ka year daalo! e.g. 2032','err'); return; }
+  if(!jfExtraYears.includes(parseInt(val))) jfExtraYears.push(parseInt(val));
+  buildYearOptions('jfYear', val, true);
+  document.getElementById('jfYear').value = val;
+  document.getElementById('jfYearFilterCustomBox').style.display = 'none';
+  inp.value = '';
+  renderJobFair();
+  showToast('Year ' + val + ' add ho gaya ✅');
+}
+
+function cancelJFYearFilter(){
+  buildYearOptions('jfYear', '', true);
+  document.getElementById('jfYearFilterCustomBox').style.display = 'none';
+  document.getElementById('jfYearFilterInput').value = '';
+  renderJobFair();
+}
+
+function handleJFYearModal(sel){
+  if(sel.value === '__custom__'){
+    document.getElementById('jfYearModalCustomBox').style.display = 'block';
+  } else {
+    document.getElementById('jfYearModalCustomBox').style.display = 'none';
+  }
+}
+
+function addCustomJFYearModal(){
+  const inp = document.getElementById('jfYearModalInput');
+  const val = inp.value.trim();
+  if(!/^\d{4}$/.test(val)){ showToast('Sirf 4 digit ka year daalo! e.g. 2032','err'); return; }
+  if(!jfExtraYears.includes(parseInt(val))) jfExtraYears.push(parseInt(val));
+  buildYearOptions('jfYearM', val, false);
+  document.getElementById('jfYearM').value = val;
+  document.getElementById('jfYearModalCustomBox').style.display = 'none';
+  inp.value = '';
+  showToast('Year ' + val + ' add ho gaya ✅');
+}
+
+function cancelJFYearModal(){
+  const curYear = new Date().getFullYear();
+  buildYearOptions('jfYearM', curYear, false);
+  document.getElementById('jfYearModalCustomBox').style.display = 'none';
+  document.getElementById('jfYearModalInput').value = '';
+}
+
 function loadJobFair(){
+  buildYearOptions("jfYear", "", true);
   if(window._firebaseReady && window._db){
     window._db.ref("iti_kiloi/jobfair").on("value", snap=>{
       jobFairData = snap.exists() ? Object.values(snap.val()) : [];
@@ -2231,7 +2317,7 @@ function openAddJobFairModal(){
   sel.innerHTML=trades.map(t=>`<option>${t}</option>`).join("");
   const now=new Date();
   document.getElementById("jfMonthM").value=String(now.getMonth()+1).padStart(2,"0");
-  document.getElementById("jfYearM").value=String(now.getFullYear());
+  buildYearOptions("jfYearM", now.getFullYear(), false);
   document.getElementById("jobFairModal").classList.add("open");
 }
 
@@ -2251,7 +2337,7 @@ function openEditJFModal(id){
   sel.innerHTML=trades.map(t=>`<option>${t}</option>`).join("");
   sel.value=j.trade||"";
   document.getElementById("jfMonthM").value=j.month||"01";
-  document.getElementById("jfYearM").value=j.year||"2025";
+  buildYearOptions("jfYearM", j.year||new Date().getFullYear(), false);
   document.getElementById("jobFairModal").classList.add("open");
 }
 
