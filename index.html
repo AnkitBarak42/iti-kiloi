@@ -645,7 +645,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
         </div>
       </div>
 
-      <!-- JOB FAIR PAGE -->
+      <!-- JOB FAIR -->
       <div class="page" id="page-jobfair">
         <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px">
           <div class="ph" style="margin-bottom:0"><h1>🏢 Job Fair</h1><p>Monthly Job Fair records — Firebase synced ☁️</p></div>
@@ -705,14 +705,38 @@ tr:hover td{background:rgba(255,255,255,.015)}
     </div>
     <div class="fg2"><label>Address</label><input id="fAddress" placeholder="Village/City, District"></div>
     <div class="form-grid">
-      <div class="fg2"><label>Trade *</label><select id="fTrade2"></select></div>
+      <div class="fg2"><label>Trade *</label>
+        <select id="fTrade2"></select>
+      </div>
       <div class="fg2"><label>Session</label>
-        <select id="fSession2">
+        <select id="fSession2" onchange="handleStudentSessionChange(this)">
           <option>2020-21</option><option>2021-22</option><option>2022-23</option><option>2023-24</option><option selected>2024-25</option><option>2025-26</option>
+          <option value="__custom__">➕ Custom Session...</option>
         </select>
+        <div id="fSessionCustomBox" style="display:none;margin-top:6px;display:none">
+          <input id="fSessionInput" placeholder="e.g. 2026-27" maxlength="7"
+            style="width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--accent);border-radius:8px;color:var(--text);font-size:13px;outline:none"
+            onkeydown="if(event.key==='Enter')confirmStudentSession()">
+          <div style="display:flex;gap:6px;margin-top:5px">
+            <button type="button" class="btn btn-primary btn-sm" onclick="confirmStudentSession()">✅ Add</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="cancelStudentSession()">Cancel</button>
+          </div>
+        </div>
       </div>
       <div class="fg2"><label>Status</label>
-        <select id="fStatus2"><option>Placed</option><option>Apprenticeship</option><option>Self Employed</option><option>Studying</option><option>Unemployed</option></select>
+        <select id="fStatus2" onchange="handleStudentStatusChange(this)">
+          <option>Placed</option><option>Apprenticeship</option><option>Self Employed</option><option>Studying</option><option>Unemployed</option>
+          <option value="__custom__">➕ Custom Status...</option>
+        </select>
+        <div id="fStatusCustomBox" style="display:none;margin-top:6px">
+          <input id="fStatusInput" placeholder="e.g. Higher Studies" maxlength="30"
+            style="width:100%;padding:9px 11px;background:var(--bg2);border:1px solid var(--accent);border-radius:8px;color:var(--text);font-size:13px;outline:none"
+            onkeydown="if(event.key==='Enter')confirmStudentStatus()">
+          <div style="display:flex;gap:6px;margin-top:5px">
+            <button type="button" class="btn btn-primary btn-sm" onclick="confirmStudentStatus()">✅ Add</button>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="cancelStudentStatus()">Cancel</button>
+          </div>
+        </div>
       </div>
       <div class="fg2"><label>Email ID</label><input id="fCompany" placeholder="student@email.com"></div>
     </div>
@@ -1382,10 +1406,83 @@ function openAddModal(){
   editingId=null;
   document.getElementById("modalTitle").textContent="➕ Add Student";
   ["fName","fRoll","fMobile","fAadhaar","fAddress","fCompany","fRemarks"].forEach(id=>document.getElementById(id).value="");
-  document.getElementById("fTrade2").innerHTML=trades.map(t=>`<option>${t}</option>`).join("");
-  document.getElementById("fSession2").value="2024-25";
-  document.getElementById("fStatus2").value="Placed";
+  rebuildStudentTradeSelect(trades[0]||"");
+  rebuildStudentSessionSelect("2024-25");
+  rebuildStudentStatusSelect("Placed");
+  document.getElementById("fSessionCustomBox").style.display="none";
+  document.getElementById("fStatusCustomBox").style.display="none";
   document.getElementById("stuModal").classList.add("open");
+}
+
+function rebuildStudentTradeSelect(selected){
+  const sel=document.getElementById("fTrade2");
+  sel.innerHTML=trades.map(t=>`<option${t===selected?" selected":""}>${t}</option>`).join("");
+}
+
+
+function rebuildStudentSessionSelect(selected){
+  const sel=document.getElementById("fSession2");
+  const opts=SESSIONS.map(s=>`<option${s===selected?" selected":""}>${s}</option>`).join("");
+  sel.innerHTML=opts+`<option value="__custom__">➕ Custom Session...</option>`;
+  if(selected&&!SESSIONS.includes(selected)){
+    const o=document.createElement("option");o.value=selected;o.textContent=selected;o.selected=true;
+    sel.insertBefore(o,sel.lastElementChild);
+  }
+}
+
+function rebuildStudentStatusSelect(selected){
+  const baseStatuses=["Placed","Apprenticeship","Self Employed","Studying","Unemployed"];
+  const allStatuses=[...new Set([...baseStatuses,...students.map(s=>s.status).filter(Boolean)])];
+  const sel=document.getElementById("fStatus2");
+  sel.innerHTML=allStatuses.map(s=>`<option${s===selected?" selected":""}>${s}</option>`).join("")
+    +`<option value="__custom__">➕ Custom Status...</option>`;
+}
+
+function handleStudentSessionChange(sel){
+  if(sel.value==="__custom__"){
+    document.getElementById("fSessionCustomBox").style.display="block";
+    document.getElementById("fSessionInput").focus();
+  } else {
+    document.getElementById("fSessionCustomBox").style.display="none";
+  }
+}
+
+function confirmStudentSession(){
+  const val=document.getElementById("fSessionInput").value.trim();
+  if(!val){showToast("Session likhein!","err");return;}
+  if(!SESSIONS.includes(val)) SESSIONS.push(val);
+  rebuildStudentSessionSelect(val);
+  document.getElementById("fSessionCustomBox").style.display="none";
+  document.getElementById("fSessionInput").value="";
+}
+
+function cancelStudentSession(){
+  document.getElementById("fSessionCustomBox").style.display="none";
+  document.getElementById("fSessionInput").value="";
+  document.getElementById("fSession2").value="2024-25";
+}
+
+function handleStudentStatusChange(sel){
+  if(sel.value==="__custom__"){
+    document.getElementById("fStatusCustomBox").style.display="block";
+    document.getElementById("fStatusInput").focus();
+  } else {
+    document.getElementById("fStatusCustomBox").style.display="none";
+  }
+}
+
+function confirmStudentStatus(){
+  const val=document.getElementById("fStatusInput").value.trim();
+  if(!val){showToast("Status likhein!","err");return;}
+  rebuildStudentStatusSelect(val);
+  document.getElementById("fStatusCustomBox").style.display="none";
+  document.getElementById("fStatusInput").value="";
+}
+
+function cancelStudentStatus(){
+  document.getElementById("fStatusCustomBox").style.display="none";
+  document.getElementById("fStatusInput").value="";
+  document.getElementById("fStatus2").value="Placed";
 }
 
 function editStudent(id){
@@ -1395,8 +1492,11 @@ function editStudent(id){
   document.getElementById("fName").value=s.name;document.getElementById("fRoll").value=s.roll;
   document.getElementById("fMobile").value=s.mobile;document.getElementById("fAadhaar").value=s.aadhaar;
   document.getElementById("fAddress").value=s.address;
-  document.getElementById("fTrade2").innerHTML=trades.map(t=>`<option${t===s.trade?" selected":""}>${t}</option>`).join("");
-  document.getElementById("fSession2").value=s.session;document.getElementById("fStatus2").value=s.status;
+  rebuildStudentTradeSelect(s.trade);
+  rebuildStudentSessionSelect(s.session);
+  rebuildStudentStatusSelect(s.status);
+  document.getElementById("fSessionCustomBox").style.display="none";
+  document.getElementById("fStatusCustomBox").style.display="none";
   document.getElementById("fCompany").value=s.email||"";document.getElementById("fRemarks").value=s.remarks;
   document.getElementById("stuModal").classList.add("open");
 }
