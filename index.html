@@ -7,12 +7,12 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="ITI Kiloi">
-<meta name="description" content="ITI Kiloi Placement Management System">
+<meta name="apple-mobile-web-app-title" content="MyKiloi">
+<meta name="description" content="MyKiloi Placement Management System">
 <meta name="google-site-verification" content="V4aHdXUFUb_og2IsR94mnTht2Jg1sS4PThDIKuVQmC8" />
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
-<title>ITI Kiloi — Placement System</title>
+<title>MyKiloi — Placement System</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
@@ -234,7 +234,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
 <div id="offlineBanner">📵 Offline mode — App running on cached data</div>
 
 <div id="installBanner">
-  <p>📱 Install ITI Kiloi on your phone!</p>
+  <p>📱 Install MyKiloi on your phone!</p>
   <button class="ib-btn" id="btnInstall">⬇️ Install App</button>
   <button class="ib-btn" id="btnDismiss">✕</button>
 </div>
@@ -243,9 +243,9 @@ tr:hover td{background:rgba(255,255,255,.015)}
 <div id="loginScreen">
   <div class="login-box">
     <div class="login-logo">
-      <div class="logo-circle"><img src="https://upload.wikimedia.org/wikipedia/en/thumb/e/e5/Industrial_Training_Institutes_Logo.svg/800px-Industrial_Training_Institutes_Logo.svg.png" alt="ITI Logo" onerror="this.parentElement.innerHTML='<span style=\'font-size:22px;font-weight:900;color:#f59e0b\'>ITI</span>'"></div>
-      <h1>ITI <span>KILOI</span></h1>
-      <p>Placement Management System</p>
+      <div class="logo-circle"><img src="icon-192.png" alt="MyKiloi Logo" onerror="this.parentElement.innerHTML='<span style=\'font-size:22px;font-weight:900;color:#f59e0b\'>MK</span>'"></div>
+      <h1>My<span>Kiloi</span></h1>
+      <p>Unofficial Student App — Not a Govt. Portal</p>
     </div>
 
     <!-- STEP 1: Role Selection -->
@@ -332,8 +332,8 @@ tr:hover td{background:rgba(255,255,255,.015)}
     <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
       <div class="sb-logo">
-        <div class="sb-logo-icon"><img src="https://upload.wikimedia.org/wikipedia/en/thumb/e/e5/Industrial_Training_Institutes_Logo.svg/800px-Industrial_Training_Institutes_Logo.svg.png" alt="ITI" onerror="this.parentElement.innerHTML='<span style=\'font-size:11px;font-weight:900;color:#f59e0b\'>ITI</span>'"></div>
-        <div><h2>ITI <span>KILOI</span></h2><p>Placement System</p></div>
+        <div class="sb-logo-icon"><img src="icon-192.png" alt="MyKiloi" onerror="this.parentElement.innerHTML='<span style=\'font-size:11px;font-weight:900;color:#f59e0b\'>MK</span>'"></div>
+        <div><h2>My<span>Kiloi</span></h2><p>Placement System</p></div>
       </div>
       <div class="sb-user">
         <div class="sb-avatar" id="sbAvatar">A</div>
@@ -351,7 +351,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
 
       <!-- DASHBOARD -->
       <div class="page active" id="page-dashboard">
-        <div class="ph"><h1>📊 Dashboard</h1><p>ITI Kiloi — Real-time placement overview</p></div>
+        <div class="ph"><h1>📊 Dashboard</h1><p>MyKiloi — Real-time placement overview</p></div>
         <div class="stats-grid" id="statsGrid"></div>
         <div style="display:grid;grid-template-columns:3fr 2fr;gap:16px;margin-bottom:18px" id="dashMidGrid">
           <div class="card" style="margin-bottom:0">
@@ -434,7 +434,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
           💡 <b style="color:var(--green)">Tip:</b> Allow popups in browser. Select "Save as PDF" in print preview.
         </div>
         <div class="print-grid">
-          <div class="print-card"><h4>📄 Full Student List</h4><p>All students — ITI official format with header & signature space.</p><button class="btn btn-primary" onclick="doPrint('all')">🖨️ Print / Save PDF</button></div>
+          <div class="print-card"><h4>📄 Full Student List</h4><p>All students — Student record format with header & signature space.</p><button class="btn btn-primary" onclick="doPrint('all')">🖨️ Print / Save PDF</button></div>
           <div class="print-card"><h4>✅ Placed Students</h4><p>Placed students list with details.</p><button class="btn btn-primary" onclick="doPrint('placed')">🖨️ Print / Save PDF</button></div>
           <div class="print-card"><h4>🔧 Apprenticeship</h4><p>Students in apprenticeship training.</p><button class="btn btn-primary" onclick="doPrint('apprenticeship')">🖨️ Print / Save PDF</button></div>
           <div class="print-card"><h4>📊 Summary Report</h4><p>Placement statistics + trade-wise breakdown.</p><button class="btn btn-primary" onclick="doPrint('summary')">🖨️ Print / Save PDF</button></div>
@@ -535,7 +535,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
           <div class="card" style="padding:22px;margin-bottom:0">
             <h4 style="font-size:14px;font-weight:700;margin-bottom:10px">📋 CSV Format Guide</h4>
             <div style="background:var(--bg2);border-radius:8px;padding:10px 13px;font-size:11px;color:var(--accent);font-family:monospace;margin-bottom:12px;line-height:2">
-              Name, Reg. No., Mobile, Aadhaar,<br>Address, Trade, Session,<br>Status, Company, Remarks
+              Name, Reg. No., Mobile, ID Number,<br>Address, Trade, Session,<br>Status, Company, Remarks
             </div>
             <div style="font-size:12px;color:var(--muted);line-height:1.9">
               <b style="color:var(--text)">Status:</b> Placed / Apprenticeship / Studying / Unemployed<br>
@@ -701,7 +701,7 @@ tr:hover td{background:rgba(255,255,255,.015)}
       <div class="fg2"><label>Full Name *</label><input id="fName" placeholder="Student full name"></div>
       <div class="fg2"><label>Registration No. *</label><input id="fRoll" placeholder="e.g. REG/2024/001"></div>
       <div class="fg2"><label>Mobile No</label><input id="fMobile" placeholder="10 digit" maxlength="10"></div>
-      <div class="fg2"><label>Aadhaar (masked)</label><input id="fAadhaar" placeholder="XXXX-XXXX-1234" maxlength="14"></div>
+      <div class="fg2"><label>ID Number</label><input id="fAadhaar" placeholder="ID / Roll Number" maxlength="14"></div>
     </div>
     <div class="fg2"><label>Address</label><input id="fAddress" placeholder="Village/City, District"></div>
     <div class="form-grid">
@@ -1507,7 +1507,7 @@ function viewStudent(id){
   const mRoll=r=>isAdm?r:(r?r.slice(0,3)+"***":"-");
   const mEmail=e=>isAdm?e:(e?e[0]+"***@***":"-");
   document.getElementById("viewGrid").innerHTML=[
-    ["Name",s.name],["Reg. No.",mRoll(s.roll)],["Mobile",s.mobile||"—"],["Aadhaar",s.aadhaar||"N/A"],
+    ["Name",s.name],["Reg. No.",mRoll(s.roll)],["Mobile",s.mobile||"—"],["ID Number",s.aadhaar||"N/A"],
     ["Address",s.address||"—"],["Trade",s.trade],["Session",s.session],
     ["Email ID",mEmail(s.email)],["Remarks",s.remarks||"—"],
   ].map(([l,v])=>`<div class="detail-item"><div class="dl">${l}</div><div class="dv">${v}</div></div>`).join("")
@@ -1593,7 +1593,7 @@ function printTable(data,title){
   const mEmailP=e=>isAdminPrint?e:(e&&e.length>0?e[0]+"***@***":"-");
   const rows=data.map((s,i)=>`<tr><td>${i+1}</td><td><b>${s.name}</b></td><td>${mRollP(s.roll||"")}</td><td>${s.trade}</td><td>${s.session}</td><td style="color:${s.status==="Placed"?"#16a34a":s.status==="Self Employed"?"#0d9488":s.status==="Unemployed"?"#dc2626":"#d97706"};font-weight:700">${s.status}</td><td>${mEmailP(s.email||"")}</td><td>${s.mobile||"—"}</td></tr>`).join("");
   w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${title}</title><style>${printCSS}</style></head><body>
-  <div class="hdr"><h1>ITI KILOI — PLACEMENT MANAGEMENT</h1><h2>${title}</h2><p>Date: ${new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"long",year:"numeric"})}</p></div>
+  <div class="hdr"><h1>MYKILOI — PLACEMENT MANAGEMENT</h1><h2>${title}</h2><p>Date: ${new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"long",year:"numeric"})}</p></div>
   <table><thead><tr><th>#</th><th>Name</th><th>Reg. No.</th><th>Trade</th><th>Session</th><th>Status</th><th>Email ID</th><th>Mobile</th></tr></thead><tbody>${rows}</tbody></table>
   <p style="text-align:right;margin-top:8px;font-size:11px;color:#666">Total: ${data.length} records</p>
   <div class="foot"><div class="sig">Principal</div><div class="sig">Placement Officer</div><div class="sig">Office Stamp</div></div>
@@ -1620,7 +1620,7 @@ function doPrint(type){
       return`<tr><td><b>${t}</b></td><td>${ts.length}</td><td style="color:#16a34a">${pl}</td><td style="color:#2563eb">${ap}</td><td style="color:#d97706">${st2}</td><td style="color:#dc2626">${un}</td><td style="font-weight:700;color:${p>=70?"#16a34a":p>=40?"#d97706":"#dc2626"}">${p}%</td></tr>`;
     }).join("");
     w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Summary</title><style>${printCSS}h3{font-size:13px;margin:16px 0 8px;border-bottom:1px solid #e5e7eb;padding-bottom:5px}</style></head><body>
-    <div class="hdr"><h1>ITI KILOI — PLACEMENT MANAGEMENT</h1><h2>Placement Summary Report</h2><p>${new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"long",year:"numeric"})}</p></div>
+    <div class="hdr"><h1>MYKILOI — PLACEMENT MANAGEMENT</h1><h2>Placement Summary Report</h2><p>${new Date().toLocaleDateString("en-IN",{day:"2-digit",month:"long",year:"numeric"})}</p></div>
     <div style="text-align:center;margin:14px 0">
       <div class="sbox"><div class="sval">${s.total}</div><div class="slbl">Total</div></div>
       <div class="sbox"><div class="sval" style="color:#16a34a">${s.placed}</div><div class="slbl">Placed</div></div>
@@ -1649,7 +1649,7 @@ function exportExcel(){
     const wb = XLSX.utils.book_new();
 
     // Sheet 1: Students
-    const headers = ["S.No","Name","Reg. No.","Mobile","Aadhaar","Address","Trade","Session","Status","Email ID","Remarks"];
+    const headers = ["S.No","Name","Reg. No.","Mobile","ID Number","Address","Trade","Session","Status","Email ID","Remarks"];
     const rows = students.map((s,i)=>[i+1,s.name,s.roll||"",s.mobile||"",s.aadhaar||"",s.address||"",s.trade,s.session,s.status,s.email||"",s.remarks||""]);
     const ws = XLSX.utils.aoa_to_sheet([headers,...rows]);
     // Column widths
@@ -1658,7 +1658,7 @@ function exportExcel(){
 
     // Sheet 2: Summary
     const summaryData = [
-      ["ITI KILOI — PLACEMENT SUMMARY",""],
+      ["MYKILOI — PLACEMENT SUMMARY",""],
       ["Date", new Date().toLocaleDateString("en-IN")],
       ["",""],
       ["Metric","Count"],
@@ -1686,7 +1686,7 @@ function exportExcel(){
     ws3['!cols'] = [18,8,8,14,10,12,12].map(w=>({wch:w}));
     XLSX.utils.book_append_sheet(wb, ws3, "Trade-wise");
 
-    const fname = `ITI_Kiloi_${new Date().toISOString().slice(0,10)}.xlsx`;
+    const fname = `MyKiloi_${new Date().toISOString().slice(0,10)}.xlsx`;
     XLSX.writeFile(wb, fname);
     showToast("Excel file download ho gayi ✅");
   } catch(e){ showToast("Excel error: "+e.message,"err"); }
@@ -1704,7 +1704,7 @@ function exportPDF(type){
     doc.rect(0,0,297,18,'F');
     doc.setTextColor(0,0,0);
     doc.setFontSize(14); doc.setFont(undefined,'bold');
-    doc.text("ITI KILOI — PLACEMENT MANAGEMENT SYSTEM", 148.5, 7, {align:"center"});
+    doc.text("MYKILOI — PLACEMENT MANAGEMENT SYSTEM", 148.5, 7, {align:"center"});
     doc.setFontSize(9); doc.setFont(undefined,'normal');
 
     if(type==="summary"){
@@ -1787,12 +1787,12 @@ function exportPDF(type){
     for(let i=1;i<=pageCount;i++){
       doc.setPage(i);
       doc.setFontSize(7); doc.setTextColor(150,150,150);
-      doc.text(`ITI Kiloi Placement System | Page ${i} of ${pageCount}`, 148.5, 205, {align:"center"});
+      doc.text(`MyKiloi Placement System | Page ${i} of ${pageCount}`, 148.5, 205, {align:"center"});
       doc.text("Principal's Signature: ___________________", 20, 205);
       doc.text("Placement Officer: ___________________", 200, 205);
     }
 
-    const fname = `ITI_Kiloi_${type}_${new Date().toISOString().slice(0,10)}.pdf`;
+    const fname = `MyKiloi_${type}_${new Date().toISOString().slice(0,10)}.pdf`;
     doc.save(fname);
     showToast("PDF download ho gayi ✅");
   } catch(e){ showToast("PDF error: "+e.message,"err"); console.error(e); }
@@ -1800,12 +1800,12 @@ function exportPDF(type){
 
 // ── CSV EXPORT ──
 function exportData(){
-  const headers=["S.No","Name","Reg. No.","Mobile","Aadhaar","Address","Trade","Session","Status","Email ID","Remarks"];
+  const headers=["S.No","Name","Reg. No.","Mobile","ID Number","Address","Trade","Session","Status","Email ID","Remarks"];
   const rows=students.map((s,i)=>[i+1,s.name,s.roll||"",s.mobile||"",s.aadhaar||"",s.address||"",s.trade,s.session,s.status,s.email||"",s.remarks||""].map(v=>`"${String(v||"").replace(/"/g,'""')}"`));
   const csv=[headers.join(","),...rows.map(r=>r.join(","))].join("\n");
   const a=document.createElement("a");
   a.href=URL.createObjectURL(new Blob(["\uFEFF"+csv],{type:"text/csv;charset=utf-8"}));
-  a.download=`ITI_Kiloi_Students_${new Date().toISOString().slice(0,10)}.csv`;
+  a.download=`MyKiloi_Students_${new Date().toISOString().slice(0,10)}.csv`;
   a.click();showToast("CSV export ho gaya ✅");
 }
 
@@ -1813,12 +1813,12 @@ function exportData(){
 function exportBackup(){
   const backup = {
     version:2, exportedAt: new Date().toISOString(),
-    institution:"ITI Kiloi",
+    institution:"MyKiloi",
     data:{ students, nextId, trades, users }
   };
   const a=document.createElement("a");
   a.href=URL.createObjectURL(new Blob([JSON.stringify(backup,null,2)],{type:"application/json"}));
-  a.download=`ITI_Kiloi_Backup_${new Date().toISOString().slice(0,10)}.json`;
+  a.download=`MyKiloi_Backup_${new Date().toISOString().slice(0,10)}.json`;
   a.click();showToast("Backup download ho gaya ✅");
 }
 
@@ -1962,10 +1962,10 @@ function showImportResult(added,skipped,type){
 }
 
 function downloadTemplate(){
-  const csv=`Name,Reg. No.,Mobile,Aadhaar,Address,Trade,Session,Status,Company,Remarks\nRamesh Kumar,KLI/2024/001,9876543210,XXXX-XXXX-1234,"Kiloi, Rohtak",Electrician,2024-25,Placed,Tata Motors,Excellent`;
+  const csv=`Name,Reg. No.,Mobile,ID Number,Address,Trade,Session,Status,Company,Remarks\nRamesh Kumar,KLI/2024/001,9876543210,XXXX-XXXX-1234,"Kiloi, Rohtak",Electrician,2024-25,Placed,Tata Motors,Excellent`;
   const a=document.createElement("a");
   a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
-  a.download="ITI_Kiloi_Template.csv";a.click();
+  a.download="MyKiloi_Template.csv";a.click();
 }
 
 // ═══════════════════════════════════════════════
@@ -2605,7 +2605,7 @@ document.getElementById("btnDismiss").addEventListener("click",()=>{
   document.getElementById("installBanner").classList.remove("show");
 });
 window.addEventListener("appinstalled",()=>{
-  showToast("ITI Kiloi app install ho gaya! 🎉");
+  showToast("MyKiloi app install ho gaya! 🎉");
   document.getElementById("installBanner").classList.remove("show");
 });
 </script>
