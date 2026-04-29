@@ -1,4 +1,4 @@
-const CACHE = "iti-kiloi-v5";
+const CACHE = "iti-kiloi-v6";
 const ASSETS = ["/", "/index.html", "/manifest.json",
   "/icon-192.png", "/icon-512.png"];
 
